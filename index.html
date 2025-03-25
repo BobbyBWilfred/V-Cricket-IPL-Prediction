@@ -26,6 +26,11 @@
         <div id="matchesList"></div>
     </div>
 
+    <div class="today-predictions-container" id="todayPredictionsContainer" style="display: none;">
+        <h2>Today's Predictions</h2>
+        <div id="todayPredictionsList"></div>
+    </div>
+
     <div class="leaderboard-container" id="leaderboardContainer" style="display: none;">
         <h2>Leaderboard</h2>
         <table>
@@ -177,6 +182,7 @@ async function loadMatches() {
 
         // 21. Load the leaderboard after displaying all matches
         loadLeaderboard();
+        loadTodayPredictions();
     } catch (error) {
         // 22. Handle errors during the process
         console.error('Load matches error:', error);
@@ -204,6 +210,42 @@ async function predict(matchId, team) {
         }
     });
 }
+
+function isMatchStarted(matchDate) {
+    return new Date() > new Date(matchDate);
+}
+
+// Function to fetch and display today's predictions
+async function loadTodayPredictions() {
+    try {
+        const response = await axios.get('/today-predictions');
+        const predictions = response.data;
+        console.log("Received Predictions:", predictions); // Debugging
+        const predictionsList = document.getElementById('todayPredictionsList');
+        predictionsList.innerHTML = '';
+
+        if (predictions.length === 0) {
+            predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
+        }
+
+        predictions.forEach(prediction => {
+            const predictionDiv = document.createElement('div');
+            predictionDiv.innerHTML = `
+                <p><strong>${prediction.homeTeam} vs ${prediction.awayTeam}</strong></p>
+                <p>${prediction.username} predicted: ${prediction.predictedTeam}</p>
+            `;
+            predictionsList.appendChild(predictionDiv);
+        });
+
+        document.getElementById('todayPredictionsContainer').style.display = 'block';
+    } catch (error) {
+        console.error('Today predictions error:', error);
+        Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
+    }
+}
+
 
         async function loadLeaderboard() {
             try {
