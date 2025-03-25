@@ -136,6 +136,51 @@ app.get('/leaderboard', async (req, res) => {
     }
 });
 
+app.get('/today-predictions', async (req, res) => {
+    try {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0); // Set to start of the day UTC
+        const tomorrow = new Date(today);
+        tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+        const todayMatches = await Match.find({}); // Fetch all matches
+
+        const filteredMatches = todayMatches.filter(match => {
+            const matchDateString = match.date;
+            const matchDate = new Date(matchDateString); // Parse the date string
+
+            // Convert to UTC
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+
+            // Compare UTC dates
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
+        });
+
+        const predictions = await Prediction.find({
+            matchId: { $in: filteredMatches.map(match => match._id) }
+        }).populate('userId', 'username').populate('matchId', 'homeTeam awayTeam');
+
+        const formattedPredictions = predictions.map(prediction => ({
+            username: prediction.userId.username,
+            predictedTeam: prediction.predictedTeam,
+            homeTeam: prediction.matchId.homeTeam,
+            awayTeam: prediction.matchId.awayTeam,
+        }));
+
+        res.json(formattedPredictions);
+    } catch (error) {
+        console.error('Today predictions error:', error);
+        res.status(500).json({ message: 'Failed to get today\'s predictions' });
+    }
+});
+
 app.post('/updateUserPoints', async (req, res) => {
     const { userId, matchId } = req.body;
     try {
