@@ -191,6 +191,12 @@ async function loadMatches() {
 }
 
 async function predict(matchId, team) {
+    const match = matches.find(m => m._id === matchId);
+    if (isMatchStarted(match.date)) {
+        Swal.fire('Error', 'Match has already started. Predictions are closed.', 'error');
+        return;
+    }
+
     Swal.fire({
         title: 'Confirm Prediction',
         text: `Predict ${team} to win?`,
