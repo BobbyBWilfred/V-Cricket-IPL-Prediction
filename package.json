@@ -2,10 +2,10 @@
   "name": "ipl-prediction-app",
   "version": "1.0.0",
   "description": "IPL match prediction application",
-  "main": "script.js",
+  "main": "auction.js",
   "type": "module",
   "scripts": {
-    "start": "node script.js"
+    "start": "node auction.js"
   },
   "dependencies": {
     "axios": "^1.6.7",
