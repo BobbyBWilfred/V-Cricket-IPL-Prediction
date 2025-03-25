@@ -88,14 +88,14 @@ function getTeamColor(teamName) {
     const teamColors = {
         'Chennai Super Kings': '#FFD700',
         'Mumbai Indians': '#006BB3', 
-        'Royal Challengers Bangalore': '#00008B', 
+        'Royal Challengers Bangalore': '#ff002e', 
         'Kolkata Knight Riders': '#3D0075', 
         'Delhi Capitals': '#1779C2', 
         'Rajasthan Royals': '#174985', 
-        'Punjab Kings': '#E31E25', 
+        'Punjab Kings': '#ff005a', 
         'Sunrisers Hyderabad': '#FF8200', 
-        'Lucknow Super Giants': '#004953', 
-        'Gujarat Titans': '#EB5E28' 
+        'Lucknow Super Giants': '#0000ff', 
+        'Gujarat Titans': '#00e1ff' 
     };
     return teamColors[teamName] || '#808080'; 
 }
@@ -182,7 +182,7 @@ async function loadMatches() {
 
         // 21. Load the leaderboard after displaying all matches
         loadLeaderboard();
-        loadTodayPredictions();
+        await loadTodayPredictions();
     } catch (error) {
         // 22. Handle errors during the process
         console.error('Load matches error:', error);
@@ -224,26 +224,82 @@ function isMatchStarted(matchDate) {
 // Function to fetch and display today's predictions
 async function loadTodayPredictions() {
     try {
+        console.log('Client-side matches:', matches);
+
         const response = await axios.get('/today-predictions');
         const predictions = response.data;
-        console.log("Received Predictions:", predictions); // Debugging
+
+        console.log('Received predictions:', predictions);
+
         const predictionsList = document.getElementById('todayPredictionsList');
         predictionsList.innerHTML = '';
 
-        if (predictions.length === 0) {
+        if (!predictions || predictions.length === 0) {
+            console.log('No predictions found for today.');
             predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
             document.getElementById('todayPredictionsContainer').style.display = 'block';
             return;
         }
 
-        predictions.forEach(prediction => {
-            const predictionDiv = document.createElement('div');
-            predictionDiv.innerHTML = `
-                <p><strong>${prediction.homeTeam} vs ${prediction.awayTeam}</strong></p>
-                <p>${prediction.username} predicted: ${prediction.predictedTeam}</p>
-            `;
-            predictionsList.appendChild(predictionDiv);
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+        const todayMatches = matches.filter(match => {
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
         });
+
+        console.log('Matches for today:', todayMatches);
+
+        // Corrected filter
+        const predictionsForToday = predictions.filter(prediction => {
+            return todayMatches.some(match => {
+                return match.homeTeam === prediction.homeTeam && match.awayTeam === prediction.awayTeam;
+            });
+        });
+
+        console.log('Predictions for today:', predictionsForToday);
+
+        if (predictionsForToday.length === 0) {
+            console.log('No predictions for today\'s matches.');
+            predictionsList.innerHTML = '<p>No predictions for today\'s matches.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
+        }
+
+        const predictionsByMatch = {};
+
+        predictionsForToday.forEach(prediction => {
+            const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
+            if (!predictionsByMatch[matchKey]) {
+                predictionsByMatch[matchKey] = [];
+            }
+            predictionsByMatch[matchKey].push(prediction);
+        });
+
+        console.log('Predictions by match:', predictionsByMatch);
+
+        for (const matchKey in predictionsByMatch) {
+            const matchPredictions = predictionsByMatch[matchKey];
+            const matchDiv = document.createElement('div');
+            matchDiv.innerHTML = `
+                <p><strong>${matchKey}</strong></p>
+                <ul>
+                    ${matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
+                </ul>
+            `;
+            predictionsList.appendChild(matchDiv);
+        }
 
         document.getElementById('todayPredictionsContainer').style.display = 'block';
     } catch (error) {
@@ -251,7 +307,6 @@ async function loadTodayPredictions() {
         Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
     }
 }
-
 
         async function loadLeaderboard() {
             try {
