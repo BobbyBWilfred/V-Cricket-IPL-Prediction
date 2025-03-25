@@ -91,7 +91,17 @@ app.get('/matches', async (req, res) => {
 
 app.post('/predict', async (req, res) => {
     const { matchId, team, userId } = req.body;
+
     try {
+        const match = await Match.findById(matchId);
+        if (!match) {
+            return res.status(404).json({ message: 'Match not found' });
+        }
+
+        if (new Date() > new Date(match.date)) {
+            return res.status(400).json({ message: 'Match has already started. Predictions are closed.' });
+        }
+
         const existingPrediction = await Prediction.findOne({ userId, matchId });
         if (existingPrediction) {
             return res.status(400).json({ message: 'Prediction already exists and cannot be changed' });
