@@ -9,6 +9,7 @@
     <title>IPL Match Predictor</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script> 
 
 </head>
 <body>
@@ -99,73 +100,73 @@ function getTeamColor(teamName) {
     };
     return teamColors[teamName] || '#808080'; 
 }
+const socket = io();
+
+        socket.on('pointsUpdated', () => {
+            console.log('Points updated event received. Refreshing leaderboard.');
+            loadLeaderboard(); 
+        });
+
+        async function updateUserPointsClient(userId, matchId){
+    try{
+        const response = await axios.post('/updateUserPoints', {userId: userId, matchId: matchId});
+        console.log("updateUserPoints response:", response);
+        if(response.data.message === 'User points updated'){
+            Swal.fire('Success', 'Points updated!', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to update points', 'error');
+        }
+    }catch (error){
+        console.error("error updating user points", error);
+        Swal.fire('Error', "Failed to update points", 'error');
+    }
+}
+
 async function loadMatches() {
     try {
-        // 1. Fetch all matches from the server
         const response = await axios.get('/matches');
         matches = response.data;
 
-        // 2. Get the HTML element where matches will be displayed
         const matchesList = document.getElementById('matchesList');
-        matchesList.innerHTML = ''; // Clear existing matches
+        matchesList.innerHTML = '';
 
-        // 3. Check if a user is logged in
         if (!currentUser) {
             console.error("No user logged in!");
-            return; // Exit if no user
+            return;
         }
 
-        // 4. Fetch user predictions for this user
         const userPredictionsRes = await axios.get(`/user-predictions/${currentUser._id}`);
-        // 5. Structure the predictions for easier access
         const userPredictions = userPredictionsRes.data.reduce((acc, pred) => {
-            acc[pred.matchId] = pred; // Store the whole prediction object
+            acc[pred.matchId] = pred;
             return acc;
         }, {});
 
-        // 6. Loop through each match to display it
         for (const match of matches) {
-            // 7. Create a new div for each match
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match-item');
 
-            // 8. Prepare the prediction display
             let predictionDisplay = '';
 
-            // 9. Check if the user has a prediction for this match
             if (userPredictions[match._id]) {
-                // 10. Display the user's prediction
                 predictionDisplay = `<p class="prediction-result">You predicted: ${userPredictions[match._id].predictedTeam}</p>`;
 
-                // 11. Check if the match has a winner
                 if (match.winner) {
-                    // 12. Check if the user's prediction was correct
                     if (match.winner === userPredictions[match._id].predictedTeam) {
-                        // 13. Check if points have already been awarded
                         if (userPredictions[match._id].pointsAwarded) {
                             predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
                         } else {
-                            // 14. Award points if they haven't been awarded yet
-                            predictionDisplay += '<p class="prediction-result">Correct! You get 1 point.</p>';
-                            await axios.post('/updateUserPoints', { userId: currentUser._id, matchId: match._id });
-
-                            // 15. Refetch user predictions to update the pointsAwarded field
-                            const updatedPredictions = await axios.get(`/user-predictions/${currentUser._id}`);
-                            userPredictionsRes.data = updatedPredictions.data;
+                            await updateUserPointsClient(currentUser._id, match._id);
+                            predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
                         }
                     } else {
-                        // 16. Display if the prediction was wrong
                         predictionDisplay += '<p class="prediction-result">Wrong! You get 0 points.</p>';
                     }
-                    // 17. Display the actual winner of the match
                     predictionDisplay += `<p class="prediction-result">Winner was: ${match.winner}</p>`;
                 }
             } else {
-                // 18. Display if there is no prediction yet
                 predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
             }
 
-            // 19. Construct the HTML for the match display
             matchDiv.innerHTML = `
                 <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
                 <p>${formatDateTime(match.date)} (${match.venue})</p>
@@ -176,20 +177,16 @@ async function loadMatches() {
                 </div>
             `;
 
-            // 20. Add the match div to the matches list
             matchesList.appendChild(matchDiv);
         }
 
-        // 21. Load the leaderboard after displaying all matches
         loadLeaderboard();
         await loadTodayPredictions();
     } catch (error) {
-        // 22. Handle errors during the process
         console.error('Load matches error:', error);
         Swal.fire('Error', 'Failed to load matches', 'error');
     }
 }
-
 async function predict(matchId, team) {
     const match = matches.find(m => m._id === matchId);
     if (isMatchStarted(match.date)) {
@@ -307,6 +304,7 @@ async function loadTodayPredictions() {
         Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
     }
 }
+
 
         async function loadLeaderboard() {
             try {
