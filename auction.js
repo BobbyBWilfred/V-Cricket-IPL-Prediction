@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cron from 'node-cron';
+import { Server } from 'socket.io'; // Import socket.io
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -78,10 +80,44 @@ app.get('/user-predictions/:userId', async (req, res) => {
     }
 });
 
+async function updatePointsForAllUsers() {
+    try {
+        const matches = await Match.find({ winner: { $ne: null } }); // Get matches with winners
+        console.log("Matches with winners:", matches);
+
+        for (const match of matches) {
+            console.log(`Checking match: ${match.homeTeam} vs ${match.awayTeam}, Winner: ${match.winner}`);
+            const predictions = await Prediction.find({ matchId: match._id }); // Get all predictions for the match
+            console.log(`Predictions for match ${match._id}:`, predictions);
+
+            for (const prediction of predictions) {
+                console.log(`Checking prediction for user ${prediction.userId}: Predicted ${prediction.predictedTeam}`);
+                if (prediction.predictedTeam === match.winner && !prediction.pointsAwarded) {
+                    await User.updateOne({ _id: prediction.userId }, { $inc: { points: 1 } });
+                    await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true });
+                    console.log(`Points updated for user ${prediction.userId} for match ${match._id}`);
+                } else {
+                    console.log(`No points awarded for user ${prediction.userId} for match ${match._id}`);
+                }
+            }
+            // ... (your points update logic)
+        console.log('Points update process completed for all matches.');
+        io.emit('pointsUpdated');
+        console.log("Socket.io event pointsUpdated was emited");}
+    } catch (error) {
+        console.error('Points update error:', error);
+    }
+}
+
+cron.schedule('0 0 * * *', () => {
+    console.log('Running daily points update...');
+    updatePointsForAllUsers();
+});
+
 // Get matches route
 app.get('/matches', async (req, res) => {
     try {
-        const matches = await Match.find({});
+        const matches = await Match.find({}).sort({ date: 1 }); // Sort by date in ascending order (1)
         res.json(matches);
     } catch (error) {
         console.error('Get matches error:', error);
@@ -203,19 +239,25 @@ app.get('/today-predictions', async (req, res) => {
 });
 app.post('/updateUserPoints', async (req, res) => {
     const { userId, matchId } = req.body;
+    console.log(`Updating points for user ${userId} and match ${matchId}`); // Added log
     try {
         const match = await Match.findById(matchId);
+        console.log("match data:", match);
         const prediction = await Prediction.findOne({ userId: userId, matchId: matchId });
+        console.log("prediction data:", prediction);
 
         if (match && prediction && match.winner === prediction.predictedTeam && !prediction.pointsAwarded) {
             await User.updateOne({ _id: userId }, { $inc: { points: 1 } });
             await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true });
 
-            // Fetch the updated user and send it back
             const updatedUser = await User.findById(userId);
             res.json({ message: 'User points updated', user: updatedUser });
+            console.log(`Points updated for user ${userId} for match ${matchId}`);
+            io.emit('pointsUpdated');
+            console.log("Socket.io event pointsUpdated was emited");
         } else {
             res.status(400).json({ message: 'User points not updated' });
+            console.log(`Points not updated for user ${userId} for match ${matchId}`);
         }
     } catch (error) {
         console.error('Update user points error:', error);
@@ -224,11 +266,25 @@ app.post('/updateUserPoints', async (req, res) => {
 });
 
 
-
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'auction.html'));
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
+});
+
+
+const io = new Server(server, { // Initialize socket.io with the server
+    cors: {
+        origin: "*", // allow all origins
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
+    });
 });
