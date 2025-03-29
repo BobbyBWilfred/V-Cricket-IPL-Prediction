@@ -5,12 +5,88 @@ body {
             align-items: center;
             justify-content: flex-start;
             min-height: 100vh;
-            margin: 0;
+            margin: 20px;
             padding: 20px;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: #fff;
         }
-
+        .login-container {
+            width: 300px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        /* Button Container */
+        .button-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .button-container button {
+            padding: 10px 20px;
+            margin: 5px; /* Add spacing between buttons */
+            background-color: #62cd69;
+            border: 1px solid #4fd75d;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        /* Matches Container */
+        .matches-container, .today-predictions-container, .leaderboard-container {
+            margin-bottom: 20px;
+        }
+        
+        .matches-container #filterContainer {
+            margin-bottom: 10px;
+        }
+        
+        .match-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .team-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            cursor: pointer;
+        }
+        
+        /* Leaderboard */
+        .leaderboard-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leaderboard-container th, .leaderboard-container td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
         /* Containers */
         .matches-container {
             max-width: 1300px;
@@ -23,6 +99,22 @@ body {
             margin-bottom: 20px;
         }
         
+        .match-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .team-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 5px;
+            cursor: pointer;
+        }
         .login-container,.leaderboard-container{
             width: 90%;
             max-width: 600px;
