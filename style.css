@@ -5,59 +5,59 @@ body {
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    margin: 40px;
-    padding: 30px;
+    margin: 10px; /* Reduced margin for phones */
+    padding: 10px; /* Reduced padding for phones */
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: #fff;
 }
 
 .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-    width: 90%;
-    max-width: 500px;
-    padding: 25px;
-    border-radius: 15px;
-    background: rgba(255, 255, 255, 0.2); /* Slightly brighter login background */
-    backdrop-filter: blur(15px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    width: 95%; /* Use more of the screen width on phones */
+    max-width: none; /* Remove max-width for full screen width */
+    padding: 15px; /* Adjust padding for phones */
+    border-radius: 10px; /* Slightly smaller border radius */
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px); /* Adjust blur for phones */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Adjust shadow for phones */
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 15px; /* Reduced margin for phones */
 }
 
 .matches-container {
-    max-width: 650px;
+    max-width: none; /* Remove max-width for full screen width */
 }
 
 h2 {
-    font-size: 28px;
-    margin-bottom: 25px;
+    font-size: 22px; /* Smaller font size for phones */
+    margin-bottom: 15px;
     text-transform: uppercase;
-    letter-spacing: 1.3px;
+    letter-spacing: 1.1px;
     color: #e0f7fa;
 }
 
 input {
     width: 90%;
-    padding: 14px;
-    margin: 15px 0;
-    border-radius: 12px;
+    padding: 10px; /* Adjust padding for phones */
+    margin: 10px 0;
+    border-radius: 8px; /* Slightly smaller border radius */
     border: none;
     outline: none;
-    font-size: 17px;
-    background-color: rgba(255, 255, 255, 0.3); /* Brighter input background */
+    font-size: 15px; /* Smaller font size for phones */
+    background-color: rgba(255, 255, 255, 0.3);
     color: #fff;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 button {
-    padding: 14px 30px;
-    font-size: 18px;
+    padding: 10px 20px; /* Adjust padding for phones */
+    font-size: 16px; /* Smaller font size for phones */
     border: none;
-    border-radius: 12px;
+    border-radius: 10px; /* Slightly smaller border radius */
     cursor: pointer;
     background: #4CAF50;
     color: #fff;
     transition: 0.3s ease;
-    margin: 15px;
+    margin: 10px; /* Adjust margin for phones */
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -66,26 +66,26 @@ button:hover {
 }
 
 .match-item {
-    padding: 20px;
-    border-radius: 12px;
+    padding: 15px; /* Adjust padding for phones */
+    border-radius: 10px; /* Slightly smaller border radius */
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* Reduced margin for phones */
     text-align: center;
 }
 
 .team-circle {
-    width: 140px;
-    height: 140px;
+    width: 100px; /* Smaller team circles for phones */
+    height: 100px;
     border-radius: 50%;
     background: #4CAF50;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 15px;
+    margin: 10px; /* Adjust margin for phones */
     cursor: pointer;
     transition: 0.3s ease;
-    font-size: 16px;
+    font-size: 14px; /* Smaller font size for phones */
     font-weight: bold;
     color: white;
     text-align: center;
@@ -106,13 +106,13 @@ table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(255, 255, 255, 0.25);
-    border-radius: 12px;
+    border-radius: 10px; /* Slightly smaller border radius */
     overflow: hidden;
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
 }
 
 th, td {
-    padding: 16px;
+    padding: 12px; /* Adjust padding for phones */
     text-align: center;
 }
 
@@ -122,45 +122,45 @@ th {
 
 .user-info {
     position: absolute;
-    top: 25px;
-    right: 25px;
+    top: 10px; /* Adjust top position for phones */
+    right: 10px; /* Adjust right position for phones */
     background: rgba(255, 255, 255, 0.25);
-    padding: 15px;
-    border-radius: 12px;
+    padding: 10px; /* Adjust padding for phones */
+    border-radius: 10px; /* Slightly smaller border radius */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .prediction-result {
-    margin-top: 15px;
+    margin-top: 10px; /* Adjust margin for phones */
     font-weight: bold;
 }
 
 .today-predictions-container {
     background-color: linear-gradient(135deg, #1e3c72, #2a5298);
-    padding: 25px;
-    margin: 40px auto;
-    border-radius: 15px;
+    padding: 15px; /* Adjust padding for phones */
+    margin: 15px auto; /* Adjust margin for phones */
+    border-radius: 10px; /* Slightly smaller border radius */
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    max-width: 500px;
+    max-width: none; /* Remove max-width for full screen width */
 }
 
 .today-predictions-container h2 {
     color: #e0f7fa;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px; /* Adjust margin for phones */
 }
 
 #todayPredictionsList {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px; /* Adjust gap for phones */
 }
 
 #todayPredictionsList div {
     background-color: rgba(255, 255, 255, 0.25);
     color: #fff;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 15px; /* Adjust padding for phones */
+    border-radius: 8px; /* Slightly smaller border radius */
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
@@ -169,85 +169,45 @@ th {
 }
 
 #todayPredictionsList div p {
-    margin: 10px 0;
+    margin: 8px 0; /* Adjust margin for phones */
 }
 
-/* Enhanced Filter Styles */
 #filterContainer {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.15); /* Light background for filter */
-    padding: 15px;
-    border-radius: 10px;
+    margin-bottom: 15px; /* Reduced margin for phones */
+    background: rgba(255, 255, 255, 0.15);
+    padding: 10px; /* Adjust padding for phones */
+    border-radius: 8px; /* Slightly smaller border radius */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #teamFilter {
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
-    background: rgba(255, 255, 255, 0.2); /* Light select background */
+    padding: 10px 12px; /* Adjust padding for phones */
+    font-size: 14px; /* Smaller font size for phones */
+    border-radius: 6px; /* Slightly smaller border radius */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.2);
     color: #fff;
     outline: none;
-    margin-left: 10px; /* Spacing from label */
+    margin-left: 8px; /* Adjust margin for phones */
 }
 
 #teamFilter option {
-    background: #333; /* Darker option background */
+    background: #333;
 }
 
 #filterContainer label {
-    font-size: 17px;
-    color: #e0f7fa; /* Light label color */
-}
-
-@media (max-width: 768px) {
-    .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-        width: 95%;
-        padding: 20px;
-    }
-    .team-circle {
-        width: 90px;
-        height: 90px;
-        font-size: 14px;
-    }
-    .match-item {
-        font-size: 16px;
-    }
-    #filterContainer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    #teamFilter {
-        margin-left: 0;
-        margin-top: 10px;
-    }
+    font-size: 15px; /* Smaller font size for phones */
+    color: #e0f7fa;
 }
 
 @media (max-width: 480px) {
-    .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-        width: 98%;
-        padding: 18px;
-    }
+    /* Further adjustments for very small screens if needed */
     .team-circle {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
         font-size: 12px;
-    }
-    .match-item {
-        font-size: 14px;
-    }
-    .button-container button {
-        font-size: 14px;
-        padding: 12px;
-    }
-    #filterContainer label {
-        font-size: 15px;
-    }
-    #teamFilter {
-        font-size: 14px;
     }
 }
