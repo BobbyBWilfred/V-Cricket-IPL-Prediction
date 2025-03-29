@@ -5,31 +5,31 @@ body {
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    margin: 20px; /* Adjusted margin for better spacing */
-    padding: 20px; /* Adjusted padding */
+    margin: 20px;
+    padding: 20px;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: #fff;
 }
 
 .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-    width: 95%; /* Use more of the screen width */
-    max-width: 650px; /* Added max-width for larger screens */
-    padding: 20px; /* Adjusted padding */
-    border-radius: 12px; /* Adjusted border radius */
+    width: 95%;
+    max-width: 650px;
+    padding: 20px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px); /* Adjusted blur */
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25); /* Adjusted shadow */
+    backdrop-filter: blur(12px);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
     text-align: center;
-    margin-bottom: 25px; /* Adjusted margin */
+    margin-bottom: 25px;
 }
 
 .matches-container {
-    max-width: 800px; /* Adjusted max-width for matches */
+    max-width: 800px;
 }
 
 h2 {
-    font-size: 24px; /* Adjusted font size */
-    margin-bottom: 20px; /* Adjusted margin */
+    font-size: 24px;
+    margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: #e0f7fa;
@@ -37,27 +37,27 @@ h2 {
 
 input {
     width: 90%;
-    padding: 12px; /* Adjusted padding */
-    margin: 12px 0; /* Adjusted margin */
-    border-radius: 10px; /* Adjusted border radius */
+    padding: 12px;
+    margin: 12px 0;
+    border-radius: 10px;
     border: none;
     outline: none;
-    font-size: 16px; /* Adjusted font size */
+    font-size: 16px;
     background-color: rgba(255, 255, 255, 0.3);
     color: #fff;
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 button {
-    padding: 12px 25px; /* Adjusted padding */
-    font-size: 17px; /* Adjusted font size */
+    padding: 12px 25px;
+    font-size: 17px;
     border: none;
-    border-radius: 10px; /* Adjusted border radius */
+    border-radius: 10px;
     cursor: pointer;
     background: #4CAF50;
     color: #fff;
     transition: 0.3s ease;
-    margin: 12px; /* Adjusted margin */
+    margin: 12px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -66,26 +66,26 @@ button:hover {
 }
 
 .match-item {
-    padding: 18px; /* Adjusted padding */
-    border-radius: 10px; /* Adjusted border radius */
+    padding: 18px;
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.25);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    margin-bottom: 18px; /* Adjusted margin */
+    margin-bottom: 18px;
     text-align: center;
 }
 
 .team-circle {
-    width: 120px; /* Adjusted team circle size */
+    width: 120px;
     height: 120px;
     border-radius: 50%;
     background: #4CAF50;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 12px; /* Adjusted margin */
+    margin: 12px;
     cursor: pointer;
     transition: 0.3s ease;
-    font-size: 15px; /* Adjusted font size */
+    font-size: 15px;
     font-weight: bold;
     color: white;
     text-align: center;
@@ -106,13 +106,13 @@ table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(255, 255, 255, 0.25);
-    border-radius: 10px; /* Adjusted border radius */
+    border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
 }
 
 th, td {
-    padding: 14px; /* Adjusted padding */
+    padding: 14px;
     text-align: center;
 }
 
@@ -122,46 +122,52 @@ th {
 
 .user-info {
     position: absolute;
-    top: 15px; /* Adjusted top position */
-    right: 15px; /* Adjusted right position */
+    top: 15px;
+    right: 15px;
     background: rgba(255, 255, 255, 0.25);
-    padding: 12px; /* Adjusted padding */
-    border-radius: 10px; /* Adjusted border radius */
+    padding: 12px;
+    border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .prediction-result {
-    margin-top: 12px; /* Adjusted margin */
+    margin-top: 12px;
     font-weight: bold;
 }
 
 .today-predictions-container {
     background-color: linear-gradient(135deg, #1e3c72, #2a5298);
-    padding: 20px; /* Adjusted padding */
-    margin: 25px auto; /* Adjusted margin */
-    border-radius: 12px; /* Adjusted border radius */
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 10px;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    max-width: 650px; /* Added max-width for larger screens */
+    max-width: 550px;
 }
 
 .today-predictions-container h2 {
     color: #e0f7fa;
     text-align: center;
-    margin-bottom: 20px; /* Adjusted margin */
+    margin-bottom: 15px;
+    font-size: 20px;
 }
 
 #todayPredictionsList {
     display: flex;
     flex-direction: column;
-    gap: 18px; /* Adjusted gap */
+    gap: 12px;
+    list-style: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
+    margin: 0; /* Remove default margin */
 }
 
 #todayPredictionsList div {
     background-color: rgba(255, 255, 255, 0.25);
     color: #fff;
-    padding: 18px; /* Adjusted padding */
-    border-radius: 10px; /* Adjusted border radius */
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    text-align: left; /* Align text left for uniformity */
 }
 
 #todayPredictionsList div strong {
@@ -169,29 +175,29 @@ th {
 }
 
 #todayPredictionsList div p {
-    margin: 10px 0; /* Adjusted margin */
+    margin: 6px 0;
 }
 
 #filterContainer {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px; /* Adjusted margin */
+    margin-bottom: 20px;
     background: rgba(255, 255, 255, 0.15);
-    padding: 12px; /* Adjusted padding */
-    border-radius: 8px; /* Adjusted border radius */
+    padding: 12px;
+    border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #teamFilter {
-    padding: 12px 15px; /* Adjusted padding */
-    font-size: 16px; /* Adjusted font size */
-    border-radius: 8px; /* Adjusted border radius */
+    padding: 12px 15px;
+    font-size: 16px;
+    border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.2);
     color: #fff;
     outline: none;
-    margin-left: 10px; /* Adjusted margin */
+    margin-left: 10px;
 }
 
 #teamFilter option {
@@ -199,14 +205,13 @@ th {
 }
 
 #filterContainer label {
-    font-size: 17px; /* Adjusted font size */
+    font-size: 17px;
     color: #e0f7fa;
 }
 
 @media (max-width: 768px) {
-    /* Adjustments for tablets and phones */
     .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-        max-width: 95%; /* Adjust for smaller screens */
+        max-width: 95%;
     }
     .team-circle {
         width: 100px;
@@ -216,9 +221,8 @@ th {
 }
 
 @media (max-width: 480px) {
-    /* Further adjustments for very small screens */
     .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-        max-width: 98%; /* Adjust for smaller screens */
+        max-width: 98%;
     }
     .team-circle {
         width: 80px;
