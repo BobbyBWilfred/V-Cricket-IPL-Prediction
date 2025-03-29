@@ -155,9 +155,9 @@ th {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    list-style: none; /* Remove bullet points */
-    padding: 0; /* Remove default padding */
-    margin: 0; /* Remove default margin */
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 #todayPredictionsList div {
@@ -167,7 +167,7 @@ th {
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     font-size: 15px;
-    text-align: left; /* Align text left for uniformity */
+    text-align: left;
 }
 
 #todayPredictionsList div strong {
@@ -209,14 +209,25 @@ th {
     color: #e0f7fa;
 }
 
+/* Container for the top buttons */
+.button-container {
+    display: flex;
+    flex-direction: column; /* Default: vertical buttons */
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px; /* Add some space between buttons and matches */
+}
+
+/* Media query for phones */
 @media (max-width: 768px) {
-    .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
-        max-width: 95%;
+    .button-container {
+        flex-direction: row; /* Horizontal buttons on phones */
+        flex-wrap: wrap; /* Allow buttons to wrap to new lines */
     }
-    .team-circle {
-        width: 100px;
-        height: 100px;
-        font-size: 14px;
+
+    .button-container button {
+        flex: 1 1 auto; /* Distribute space evenly */
+        margin: 5px; /* Adjust margin for spacing */
     }
 }
 
