@@ -302,107 +302,128 @@ function showSchedule() {
             return new Date() > new Date(matchDate);
         }
 
+        
+
+
         async function loadTodayPredictions() {
-            try {
-                console.log('Client-side matches:', matches);
+    try {
+        console.log('Client-side matches:', matches);
 
-                const response = await axios.get('/today-predictions');
-                const predictions = response.data;
+        const response = await axios.get('/today-predictions');
+        const predictions = response.data;
 
-                console.log('Received predictions:', predictions);
+        console.log('Received predictions:', predictions);
 
-                const predictionsList = document.getElementById('todayPredictionsList');
-                predictionsList.innerHTML = '';
+        const predictionsList = document.getElementById('todayPredictionsList');
+        predictionsList.innerHTML = '';
 
-                if (!predictions || predictions.length === 0) {
-                    console.log('No predictions found for today.');
-                    predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
-                    document.getElementById('todayPredictionsContainer').style.display = 'block';
-                    return;
-                }
-
-                const today = new Date();
-                today.setUTCHours(0, 0, 0, 0);
-                const tomorrow = new Date(today);
-                tomorrow.setUTCDate(today.getUTCDate() + 1);
-
-                const todayMatches = matches.filter(match => {
-                    const matchDate = new Date(match.date);
-                    const utcMatchDate = new Date(
-                        matchDate.getUTCFullYear(),
-                        matchDate.getUTCMonth(),
-                        matchDate.getUTCDate(),
-                        matchDate.getUTCHours(),
-                        matchDate.getUTCMinutes(),
-                        matchDate.getUTCSeconds()
-                    );
-                    return utcMatchDate >= today && utcMatchDate < tomorrow;
-                });
-
-                console.log('Matches for today:', todayMatches);
-
-                const predictionsForToday = predictions.filter(prediction => {
-                    return todayMatches.some(match => {
-                        return match.homeTeam === prediction.homeTeam && match.awayTeam === prediction.awayTeam;
-                    });
-                });
-
-                console.log('Predictions for today:', predictionsForToday);
-
-                if (predictionsForToday.length === 0) {
-                    console.log('No predictions for today\'s matches.');
-                    predictionsList.innerHTML = '<p>No predictions for today\'s matches.</p>';
-                    document.getElementById('todayPredictionsContainer').style.display = 'block';
-                    return;
-                }
-
-                const predictionsByMatch = {};
-
-                predictionsForToday.forEach(prediction => {
-                    const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
-                    if (!predictionsByMatch[matchKey]) {
-                        predictionsByMatch[matchKey] = [];
-                    }
-                    predictionsByMatch[matchKey].push(prediction);
-                });
-
-                console.log('Predictions by match:', predictionsByMatch);
-
-                for (const matchKey in predictionsByMatch) {
-                    const matchPredictions = predictionsByMatch[matchKey];
-                    const matchDiv = document.createElement('div');
-                    matchDiv.innerHTML = `
-                        <p><strong>${matchKey}</strong></p>
-                        <ul>
-                            ${matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
-                        </ul>
-                    `;
-                    predictionsList.appendChild(matchDiv);
-                }
-
-                document.getElementById('todayPredictionsContainer').style.display = 'block';
-            } catch (error) {
-                console.error('Today predictions error:', error);
-                Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
-            }
+        if (!predictions || predictions.length === 0) {
+            console.log('No predictions found for today.');
+            predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
         }
 
-        async function loadLeaderboard() {
-            try {
-                const response = await axios.get('/leaderboard');
-                const leaderboardBody = document.getElementById('leaderboardBody');
-                leaderboardBody.innerHTML = '';
-                response.data.forEach(user => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td>${user.username}</td><td>${user.points}</td>`;
-                    leaderboardBody.appendChild(row);
-                });
-                document.getElementById('leaderboardContainer').style.display = 'block';
-            } catch (error) {
-                console.error('Leaderboard error:', error);
-                Swal.fire('Error', 'Failed to load leaderboard', 'error');
-            }
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+        const todayMatches = matches.filter(match => {
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
+        });
+
+        console.log('Matches for today:', todayMatches);
+
+        const predictionsForToday = predictions.filter(prediction => {
+            return todayMatches.some(match => {
+                return match.homeTeam === prediction.homeTeam && match.awayTeam === prediction.awayTeam;
+            });
+        });
+
+        console.log('Predictions for today:', predictionsForToday);
+
+        if (predictionsForToday.length === 0) {
+            console.log('No predictions for today\'s matches.');
+            predictionsList.innerHTML = '<p>No predictions for today\'s matches.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
         }
+
+        // Debugging: Check currentUser and predictionsForToday
+        console.log("currentUser:", currentUser);
+        console.log("predictionsForToday:", predictionsForToday);
+
+        // Corrected comparison: Use username instead of userId
+        const userHasPredictedToday = predictionsForToday.some(prediction => prediction.username === currentUser.username);
+
+        if (!userHasPredictedToday) {
+            predictionsList.innerHTML = '<p>Make a prediction to see today\'s predictions.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
+        }
+
+        const predictionsByMatch = {};
+
+        predictionsForToday.forEach(prediction => {
+            const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
+            if (!predictionsByMatch[matchKey]) {
+                predictionsByMatch[matchKey] = [];
+            }
+            predictionsByMatch[matchKey].push(prediction);
+        });
+
+        console.log('Predictions by match:', predictionsByMatch);
+
+        for (const matchKey in predictionsByMatch) {
+            const matchPredictions = predictionsByMatch[matchKey];
+            const matchDiv = document.createElement('div');
+            matchDiv.innerHTML = `
+                <p><strong>${matchKey}</strong></p>
+                <ul>
+                    ${matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
+                </ul>
+            `;
+            predictionsList.appendChild(matchDiv);
+        }
+
+        document.getElementById('todayPredictionsContainer').style.display = 'block';
+    } catch (error) {
+        console.error('Today predictions error:', error);
+        Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
+    }
+}
+
+async function loadLeaderboard() {
+    try {
+        const response = await axios.get('/leaderboard'); // Replace '/leaderboard' with your actual endpoint
+        const leaderboardData = response.data;
+
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        leaderboardBody.innerHTML = ''; // Clear previous data
+
+        leaderboardData.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${user.username}</td>
+                <td>${user.points}</td>
+            `;
+            leaderboardBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Leaderboard error:', error);
+        Swal.fire('Error', 'Failed to load leaderboard', 'error');
+    }
+}
 
         
     </script>
