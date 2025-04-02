@@ -35,6 +35,12 @@
             <select id="teamFilter">
                 <option value="">All Teams</option>
             </select>
+            <label for="statusFilter">Filter by Status:</label>
+            <select id="statusFilter">
+                <option value="">All Matches</option>
+                <option value="completed">Completed Matches</option>
+                <option value="incomplete">Incomplete Matches</option>
+            </select>
         </div>
         <div id="matchesList"></div>
     </div>
@@ -230,7 +236,48 @@
             teamFilter.appendChild(option);
         });
 
-        displayMatches(matchesToDisplay); // Corrected line: use matchesToDisplay
+        // Add status filter
+        const statusFilter = document.getElementById('statusFilter');
+        statusFilter.addEventListener('change', function() {
+            const selectedStatus = this.value;
+            let filteredMatches = matches;
+
+            if (selectedStatus === 'completed') {
+                filteredMatches = matches.filter(match => match.winner);
+            } else if (selectedStatus === 'incomplete') {
+                filteredMatches = matches.filter(match => !match.winner);
+            }
+
+            // Apply team filter if it's already selected
+            const selectedTeam = teamFilter.value;
+            if (selectedTeam) {
+                filteredMatches = filteredMatches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
+            }
+
+            displayMatches(filteredMatches);
+        });
+
+        // Apply team filter logic
+        teamFilter.addEventListener('change', function() {
+            const selectedTeam = this.value;
+            let filteredMatches = matches;
+
+            if (selectedTeam) {
+                filteredMatches = matches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
+            }
+
+            // Apply status filter if it's already selected
+            const selectedStatus = statusFilter.value;
+            if (selectedStatus === 'completed') {
+                filteredMatches = filteredMatches.filter(match => match.winner);
+            } else if (selectedStatus === 'incomplete') {
+                filteredMatches = filteredMatches.filter(match => !match.winner);
+            }
+
+            displayMatches(filteredMatches);
+        });
+
+        displayMatches(matchesToDisplay);
     } catch (error) {
         console.error('Load matches error:', error);
         Swal.fire('Error', 'Failed to load matches', 'error');
@@ -274,7 +321,7 @@ function showSchedule() {
         async function predict(matchId, team) {
             const match = matches.find(m => m._id === matchId);
             if (isMatchStarted(match.date)) {
-                Swal.fire('Error', 'Match has already started. Predictions are closed.', 'error');
+                Swal.fire('Match has already started. Predictions are closed.');
                 return;
             }
 
