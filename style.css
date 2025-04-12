@@ -300,7 +300,27 @@ th {
         min-width: auto;
     }
 }
+/* Style for the "Match Ongoing" message */
+.match-ongoing-message {
+    background-color: #dc3545; /* Red background */
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    position: absolute; /* Position it within the match item */
+    top: 10px;
+    right: 10px;
+    z-index: 10; /* Ensure it's above other content */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
+/* Ensure match-item is positioned for absolute positioning of the message */
+.match-item {
+    /* ... other styles ... */
+    position: relative; /* Add this if it's not already there */
+    overflow: hidden; /* To contain the absolutely positioned element if needed */
+}
 @media (max-width: 480px) {
     .login-container,
     .leaderboard-container,
