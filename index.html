@@ -232,9 +232,6 @@
             today.setUTCHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
             tomorrow.setUTCDate(today.getUTCDate() + 1);
-            console.log('Today (UTC):', today.toISOString());
-            console.log('Tomorrow (UTC):', tomorrow.toISOString());
-
             matchesToDisplay = matches.filter(match => {
                 const matchDate = new Date(match.date);
                 const utcMatchDate = new Date(
@@ -245,20 +242,26 @@
                     matchDate.getUTCMinutes(),
                     matchDate.getUTCSeconds()
                 );
-                console.log('Match Date:', matchDate.toISOString(), 'UTC Match Date:', utcMatchDate.toISOString());
-                const isToday = utcMatchDate >= today && utcMatchDate < tomorrow;
-                console.log('Is today\'s match:', match.homeTeam, 'vs', match.awayTeam, ':', isToday);
-                return isToday;
+                return utcMatchDate >= today && utcMatchDate < tomorrow;
             });
             console.log('Matches to display for today:', matchesToDisplay);
         }
 
-        // ... (rest of your loadMatches function)
         displayMatches(matchesToDisplay); // Initial display
     } catch (error) {
         console.error('Load matches error:', error);
         Swal.fire('Error', 'Failed to load matches', 'error');
     }
+}
+function populateTeamFilter() {
+    const teamFilter = document.getElementById('teamFilter');
+    const teams = [...new Set(matches.flatMap(match => [match.homeTeam, match.awayTeam]))].sort();
+    teams.forEach(team => {
+        const option = document.createElement('option');
+        option.value = team;
+        option.textContent = team;
+        teamFilter.appendChild(option);
+    });
 }
 
         function showLeaderboard() {
@@ -273,144 +276,41 @@
             loadLeaderboard();
         }
     
-        function showSchedule() {
-            document.getElementById('matchesContainer').style.display = 'block';
-            document.getElementById('todayPredictionsContainer').style.display = 'none';
-            document.getElementById('leaderboardContainer').style.display = 'none';
-            document.getElementById('filterContainer').style.display = 'block';
+        async function showSchedule() {
+    document.getElementById('matchesContainer').style.display = 'block';
+    document.getElementById('todayPredictionsContainer').style.display = 'none';
+    document.getElementById('leaderboardContainer').style.display = 'none';
+    document.getElementById('filterContainer').style.display = 'block';
 
-            document.getElementById('teamFilter').value = '';
-            document.getElementById('statusFilter').value = '';
+    document.getElementById('teamFilter').value = '';
+    document.getElementById('statusFilter').value = '';
 
-            loadMatches();
-        }
-        async function showTodayMatch() {
+    await loadMatches(); // Ensure matches are loaded first
+    populateTeamFilter(); // Populate the team filter after matches are loaded
+    applyFilters(); // Apply initial filters (show all)
+
+    // Add event listeners *after* the initial load
+    document.getElementById('teamFilter').addEventListener('change', applyFilters);
+    document.getElementById('statusFilter').addEventListener('change', applyFilters);
+}
+async function showTodayMatch() {
     document.getElementById('matchesContainer').style.display = 'none'; // Hide the general matches
     document.getElementById('filterContainer').style.display = 'none';   // Hide the filter
     document.getElementById('todayPredictionsContainer').style.display = 'block'; // Show the predictions container
     document.getElementById('leaderboardContainer').style.display = 'none';
 
-    await loadTodayPredictions(); // Load and display only today's predictions
+    await loadTodayMatchesAndPredictions(); // Combined function
 }
 
-async function loadTodayPredictions() {
+async function loadTodayMatchesAndPredictions() {
     try {
-        console.log('Fetching today\'s predictions...');
-        const response = await axios.get('/today-predictions');
-        const predictions = response.data;
-        console.log('Received today\'s predictions:', predictions);
-
-        const todayPredictionsList = document.getElementById('todayPredictionsList');
-        todayPredictionsList.innerHTML = '<h2>Today\'s Predictions</h2>';
-
-        if (!predictions || predictions.length === 0) {
-            todayPredictionsList.innerHTML += '<p>No predictions made for today\'s matches yet.</p>';
-            return;
-        }
-
-        const predictionsByMatch = {};
-
-        predictions.forEach(prediction => {
-            const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
-            if (!predictionsByMatch[matchKey]) {
-                predictionsByMatch[matchKey] = { homeTeam: prediction.homeTeam, awayTeam: prediction.awayTeam, predictions: [] };
-            }
-            predictionsByMatch[matchKey].predictions.push({ username: prediction.username, predictedTeam: prediction.predictedTeam });
-        });
-
-        console.log('Today\'s predictions grouped by match:', predictionsByMatch);
-
-        for (const matchKey in predictionsByMatch) {
-            const matchInfo = predictionsByMatch[matchKey];
-            const matchDiv = document.createElement('div');
-            matchDiv.innerHTML = `
-                <h3>${matchInfo.homeTeam} vs ${matchInfo.awayTeam}</h3>
-                <ul>
-                    ${matchInfo.predictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
-                </ul>
-                <hr>
-            `;
-            todayPredictionsList.appendChild(matchDiv);
-        }
-
-        document.getElementById('todayPredictionsContainer').style.display = 'block';
-
-    } catch (error) {
-        console.error('Error loading today\'s predictions:', error);
-        Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
-    }
-}
-
-
-        document.getElementById('teamFilter').addEventListener('change', function() {
-            const selectedTeam = this.value;
-            if (selectedTeam) {
-                const filteredMatches = matches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-                displayMatches(filteredMatches);
-            } else {
-                displayMatches(matches);
-            }
-        });
-
-        async function predict(matchId, team) {
-            const match = matches.find(m => m._id === matchId);
-            if (isMatchStarted(match.date)) {
-                Swal.fire('Match has already started. Predictions are closed.');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Confirm Prediction',
-                text: `Predict ${team} to win?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes',
-                cancelButtonText: 'No'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        await axios.post('/predict', { matchId, team, userId: currentUser._id });
-                        Swal.fire('Success', 'Prediction saved!', 'success');
-                        loadMatches();
-                    } catch (error) {
-                        Swal.fire('Error', error.response.data.message || 'Failed to save prediction', 'error');
-                    }
-                }
-            });
-        }
-
-        function isMatchStarted(matchDate) {
-            return new Date() > new Date(matchDate);
-        }
-
-        
-
-
-        async function loadTodayPredictions() {
-    try {
-        console.log('Client-side matches:', matches);
-
-        const response = await axios.get('/today-predictions');
-        const predictions = response.data;
-
-        console.log('Received predictions:', predictions);
-
-        const predictionsList = document.getElementById('todayPredictionsList');
-        predictionsList.innerHTML = '';
-
-        if (!predictions || predictions.length === 0) {
-            console.log('No predictions found.');
-            predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
-            return;
-        }
-
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setUTCDate(today.getUTCDate() + 1);
 
-        const todayMatches = matches.filter(match => {
+        const responseMatches = await axios.get('/matches');
+        const todayMatches = responseMatches.data.filter(match => {
             const matchDate = new Date(match.date);
             const utcMatchDate = new Date(
                 matchDate.getUTCFullYear(),
@@ -423,69 +323,79 @@ async function loadTodayPredictions() {
             return utcMatchDate >= today && utcMatchDate < tomorrow;
         });
 
-        console.log('Matches for today:', todayMatches);
+        console.log('Today\'s Matches:', todayMatches);
 
-        const predictionsForToday = predictions.filter(prediction => {
-            return todayMatches.some(match => {
-                return match.homeTeam === prediction.homeTeam && match.awayTeam === prediction.awayTeam;
-            });
-        });
+        const responsePredictions = await axios.get('/today-predictions');
+        const allTodayPredictions = responsePredictions.data;
+        console.log('All Today\'s Predictions:', allTodayPredictions);
 
-        console.log('Predictions for today:', predictionsForToday);
+        const todayPredictionsList = document.getElementById('todayPredictionsList');
+        todayPredictionsList.innerHTML = '<h2>Today\'s Matches and Predictions</h2>';
 
-        if (!currentUser) {
-            predictionsList.innerHTML = '<p>Please log in to see predictions.</p>';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
+        if (todayMatches.length === 0) {
+            todayPredictionsList.innerHTML += '<p>No matches scheduled for today.</p>';
             return;
         }
 
-        const userHasPredictedToday = predictionsForToday.some(prediction => prediction.username === currentUser.username);
-
-        if (!userHasPredictedToday && todayMatches.length > 0) {
-            predictionsList.innerHTML = '<p>Make a prediction for today\'s match to see other predictions.</p>';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
-            return;
-        } else if (todayMatches.length === 0) {
-            predictionsList.innerHTML = '<p>No matches scheduled for today.</p>';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
-            return;
-        } else if (predictionsForToday.length === 0) {
-            predictionsList.innerHTML = '<p>No predictions made for today\'s matches yet.</p>';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
-            return;
-        }
+        const userPredictionsRes = await axios.get(`/user-predictions/${currentUser._id}`);
+        const userPredictionsToday = userPredictionsRes.data.filter(prediction =>
+            todayMatches.some(match => match._id === prediction.matchId)
+        );
+        const hasPredictedTodayMap = userPredictionsToday.reduce((acc, pred) => {
+            acc[pred.matchId] = true;
+            return acc;
+        }, {});
 
         const predictionsByMatch = {};
-
-        predictionsForToday.forEach(prediction => {
+        allTodayPredictions.forEach(prediction => {
             const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
             if (!predictionsByMatch[matchKey]) {
-                predictionsByMatch[matchKey] = [];
+                predictionsByMatch[matchKey] = { homeTeam: prediction.homeTeam, awayTeam: prediction.awayTeam, matchId: prediction.matchId, predictions: [] };
             }
-            predictionsByMatch[matchKey].push(prediction);
+            predictionsByMatch[matchKey].predictions.push({ username: prediction.username, predictedTeam: prediction.predictedTeam });
         });
 
-        console.log('Predictions by match:', predictionsByMatch);
+        todayMatches.forEach(match => {
+            const matchKey = `${match.homeTeam} vs ${match.awayTeam}`;
+            const matchInfo = predictionsByMatch[matchKey] || { predictions: [] };
+            const hasUserPredicted = hasPredictedTodayMap[match._id];
 
-        for (const matchKey in predictionsByMatch) {
-            const matchPredictions = predictionsByMatch[matchKey];
             const matchDiv = document.createElement('div');
+            matchDiv.classList.add('match-item');
             matchDiv.innerHTML = `
-                <p><strong>${matchKey}</strong></p>
-                <ul>
-                    ${matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
-                </ul>
+                <h3>${match.homeTeam} vs ${match.awayTeam}</h3>
+                <p>${formatDateTime(match.date)} (${match.venue})</p>
+                <div style="display: flex; justify-content: center;">
+                    <div class="team-circle" onclick="predict('${match._id}', '${match.homeTeam}')" style="background-color: ${getTeamColor(match.homeTeam)}">${match.homeTeam}</div>
+                    <div class="team-circle" onclick="predict('${match._id}', '${match.awayTeam}')" style="background-color: ${getTeamColor(match.awayTeam)}">${match.awayTeam}</div>
+                </div>
+                <h4>Predictions:</h4>
+                <div id="predictions-${match._id}"></div>
+                <hr>
             `;
-            predictionsList.appendChild(matchDiv);
-        }
+            todayPredictionsList.appendChild(matchDiv);
+
+            const predictionsDiv = document.getElementById(`predictions-${match._id}`);
+            if (hasUserPredicted) {
+                if (matchInfo.predictions.length > 0) {
+                    const predictionsUL = document.createElement('ul');
+                    predictionsUL.innerHTML = matchInfo.predictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('');
+                    predictionsDiv.appendChild(predictionsUL);
+                } else {
+                    predictionsDiv.innerHTML += '<p>No predictions yet for this match.</p>';
+                }
+            } else {
+                predictionsDiv.innerHTML += '<p>Make your prediction to see others predictions!</p>';
+            }
+        });
 
         document.getElementById('todayPredictionsContainer').style.display = 'block';
+
     } catch (error) {
-        console.error('Today predictions error:', error);
-        Swal.fire('Error', 'Failed to load today\'s predictions', 'error');
+        console.error('Error loading today\'s matches and predictions:', error);
+        Swal.fire('Error', 'Failed to load today\'s matches and predictions', 'error');
     }
 }
-
 async function loadLeaderboard() {
     try {
         const response = await axios.get('/leaderboard'); // Replace '/leaderboard' with your actual endpoint
