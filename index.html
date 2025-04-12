@@ -284,24 +284,37 @@
 
             loadMatches();
         }
-        function showTodayMatch() {
-    document.getElementById('matchesContainer').style.display = 'none'; // Hide the general matches container
-    document.getElementById('filterContainer').style.display = 'none';   // Hide the filter container
-    document.getElementById('todayPredictionsContainer').style.display = 'block'; // Show the today's predictions container
+        async function showTodayMatch() {
+    document.getElementById('matchesContainer').style.display = 'block'; // Show the matches container
+    document.getElementById('filterContainer').style.display = 'none';   // Hide the filter
+    document.getElementById('todayPredictionsContainer').style.display = 'block'; // Show the predictions area
     document.getElementById('leaderboardContainer').style.display = 'none';
 
-    loadTodayMatchesAndPredictions(); // New function to load today's data
+    await loadMatches(true); // Load only today's matches into the 'matches' array
+    loadTodayPredictionsSection(); // Load and display predictions below each match
 }
 
-async function loadTodayMatchesAndPredictions() {
+async function loadTodayPredictionsSection() {
     try {
-        const today = new Date();
-        today.setUTCHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setUTCDate(today.getUTCDate() + 1);
+        if (!currentUser) {
+            document.getElementById('todayPredictionsList').innerHTML = '<p>Please log in to see predictions.</p>';
+            return;
+        }
 
-        const responseMatches = await axios.get('/matches');
-        const todayMatches = responseMatches.data.filter(match => {
+        const userPredictionsRes = await axios.get(`/user-predictions/${currentUser._id}`);
+        const userPredictionsMap = userPredictionsRes.data.reduce((acc, pred) => {
+            acc[pred.matchId] = pred;
+            return acc;
+        }, {});
+
+        const predictionsResponse = await axios.get('/today-predictions');
+        const allTodayPredictions = predictionsResponse.data;
+
+        const todayMatches = matches.filter(match => {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setUTCDate(today.getUTCDate() + 1);
             const matchDate = new Date(match.date);
             const utcMatchDate = new Date(
                 matchDate.getUTCFullYear(),
@@ -314,40 +327,36 @@ async function loadTodayMatchesAndPredictions() {
             return utcMatchDate >= today && utcMatchDate < tomorrow;
         });
 
-        console.log('Today\'s Matches:', todayMatches);
-
-        const responsePredictions = await axios.get('/today-predictions');
-        const allTodayPredictions = responsePredictions.data;
-        console.log('All Today\'s Predictions:', allTodayPredictions);
-
         const todayPredictionsList = document.getElementById('todayPredictionsList');
-        todayPredictionsList.innerHTML = '<h2>Today\'s Matches</h2>'; // Add a heading for today's matches
-
-        if (todayMatches.length === 0) {
-            todayPredictionsList.innerHTML += '<p>No matches scheduled for today.</p>';
-            return;
-        }
+        todayPredictionsList.innerHTML = '<h2>Today\'s Predictions</h2>';
 
         todayMatches.forEach(match => {
             const matchDiv = document.createElement('div');
-            matchDiv.innerHTML = `<h3>${match.homeTeam} vs ${match.awayTeam}</h3>`;
+            matchDiv.classList.add('match-item');
+            matchDiv.innerHTML = `
+                <h3>${match.homeTeam} vs ${match.awayTeam}</h3>
+                <p>${formatDateTime(match.date)} (${match.venue})</p>
+                <div style="display: flex; justify-content: center;">
+                    <div class="team-circle" onclick="predict('${match._id}', '${match.homeTeam}')" style="background-color: ${getTeamColor(match.homeTeam)}">${match.homeTeam}</div>
+                    <div class="team-circle" onclick="predict('${match._id}', '${match.awayTeam}')" style="background-color: ${getTeamColor(match.awayTeam)}">${match.awayTeam}</div>
+                </div>
+                <div id="predictions-${match._id}"></div>
+                <hr>
+            `;
             todayPredictionsList.appendChild(matchDiv);
 
-            const matchPredictions = allTodayPredictions.filter(pred =>
-                pred.homeTeam === match.homeTeam && pred.awayTeam === match.awayTeam
-            );
+            // Initially hide predictions
+            document.getElementById(`predictions-${match._id}`).style.display = 'none';
 
-            if (matchPredictions.length > 0) {
-                const predictionsUL = document.createElement('ul');
-                predictionsUL.innerHTML = matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('');
-                todayPredictionsList.appendChild(predictionsUL);
+            // If user has predicted, load and show predictions
+            if (userPredictionsMap[match._id]) {
+                loadAndDisplayMatchPredictions(match._id, allTodayPredictions);
             } else {
-                const noPredictionsPara = document.createElement('p');
-                noPredictionsPara.textContent = 'No predictions yet for this match.';
-                todayPredictionsList.appendChild(noPredictionsPara);
+                const predictionPrompt = document.createElement('p');
+                predictionPrompt.textContent = 'Make your prediction to see others\' predictions!';
+                document.getElementById(`predictions-${match._id}`).appendChild(predictionPrompt);
+                document.getElementById(`predictions-${match._id}`).style.display = 'block'; // Show the prompt
             }
-            const hr = document.createElement('hr');
-            todayPredictionsList.appendChild(hr);
         });
 
         document.getElementById('todayPredictionsContainer').style.display = 'block';
@@ -356,6 +365,51 @@ async function loadTodayMatchesAndPredictions() {
         console.error('Error loading today\'s matches and predictions:', error);
         Swal.fire('Error', 'Failed to load today\'s matches and predictions', 'error');
     }
+}
+
+async function loadAndDisplayMatchPredictions(matchId, allPredictions) {
+    const matchPredictions = allPredictions.filter(p => p.matchId === matchId);
+    const predictionsDiv = document.getElementById(`predictions-${matchId}`);
+    predictionsDiv.innerHTML = '<h4>Predictions:</h4>';
+    if (matchPredictions.length > 0) {
+        const predictionsUL = document.createElement('ul');
+        predictionsUL.innerHTML = matchPredictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('');
+        predictionsDiv.appendChild(predictionsUL);
+        predictionsDiv.style.display = 'block';
+    } else {
+        const noPredictionsPara = document.createElement('p');
+        noPredictionsPara.textContent = 'No predictions yet for this match.';
+        predictionsDiv.appendChild(noPredictionsPara);
+        predictionsDiv.style.display = 'block';
+    }
+}
+
+async function predict(matchId, team) {
+    const match = matches.find(m => m._id === matchId);
+    if (isMatchStarted(match.date)) {
+        Swal.fire('Match has already started. Predictions are closed.');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Confirm Prediction',
+        text: `Predict ${team} to win?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await axios.post('/predict', { matchId, team, userId: currentUser._id });
+                Swal.fire('Success', 'Prediction saved!', 'success').then(() => {
+                    loadTodayPredictionsSection(); // Reload predictions after voting
+                });
+            } catch (error) {
+                Swal.fire('Error', error.response.data.message || 'Failed to save prediction', 'error');
+            }
+        }
+    });
 }
 
 
