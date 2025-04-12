@@ -222,20 +222,38 @@ function getTeamLogo(teamName) {
             });
         });
 }
+function applyFilters() {
+    const teamFilter = document.getElementById('teamFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
 
-        async function loadMatches(filterToday = false) {
+    let filteredMatches = matches;
+
+    if (teamFilter) {
+        filteredMatches = filteredMatches.filter(match => match.homeTeam === teamFilter || match.awayTeam === teamFilter);
+    }
+
+    if (statusFilter === 'completed') {
+        filteredMatches = filteredMatches.filter(match => match.winner);
+    } else if (statusFilter === 'incomplete') {
+        filteredMatches = filteredMatches.filter(match => !match.winner);
+    }
+
+    displayMatches(filteredMatches);
+}
+async function loadMatches(initialFilter = '') {
     try {
         const response = await axios.get('/matches');
         matches = response.data;
 
         let matchesToDisplay = matches;
 
-        if (filterToday) {
+        if (initialFilter === 'incomplete') {
+            matchesToDisplay = matches.filter(match => !match.winner);
+        } else if (initialFilter === 'today') {
             const today = new Date();
             today.setUTCHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
             tomorrow.setUTCDate(today.getUTCDate() + 1);
-
             matchesToDisplay = matches.filter(match => {
                 const matchDate = new Date(match.date);
                 const utcMatchDate = new Date(
@@ -260,76 +278,44 @@ function getTeamLogo(teamName) {
             teamFilter.appendChild(option);
         });
 
-        // Add status filter
         const statusFilter = document.getElementById('statusFilter');
-        statusFilter.addEventListener('change', function() {
-            const selectedStatus = this.value;
-            let filteredMatches = matches;
-
-            if (selectedStatus === 'completed') {
-                filteredMatches = matches.filter(match => match.winner);
-            } else if (selectedStatus === 'incomplete') {
-                filteredMatches = matches.filter(match => !match.winner);
-            }
-
-            // Apply team filter if it's already selected
-            const selectedTeam = teamFilter.value;
-            if (selectedTeam) {
-                filteredMatches = filteredMatches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-            }
-
-            displayMatches(filteredMatches);
-        });
-
-        // Apply team filter logic
-        teamFilter.addEventListener('change', function() {
-            const selectedTeam = this.value;
-            let filteredMatches = matches;
-
-            if (selectedTeam) {
-                filteredMatches = matches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-            }
-
-            // Apply status filter if it's already selected
-            const selectedStatus = statusFilter.value;
-            if (selectedStatus === 'completed') {
-                filteredMatches = filteredMatches.filter(match => match.winner);
-            } else if (selectedStatus === 'incomplete') {
-                filteredMatches = filteredMatches.filter(match => !match.winner);
-            }
-
-            displayMatches(filteredMatches);
-        });
+        statusFilter.innerHTML = '<option value="">All Matches</option>';
+        statusFilter.innerHTML += '<option value="completed">Matches Played</option>';
+        statusFilter.innerHTML += '<option value="incomplete">Matches Yet To Be Played</option>';
 
         displayMatches(matchesToDisplay);
+
+        // Attach event listeners ONCE after the elements are created
+        teamFilter.addEventListener('change', applyFilters);
+        statusFilter.addEventListener('change', applyFilters);
+
     } catch (error) {
         console.error('Load matches error:', error);
         Swal.fire('Error', 'Failed to load matches', 'error');
     }
 }
-
         function showLeaderboard() {
             document.getElementById('matchesContainer').style.display = 'none';
             document.getElementById('todayPredictionsContainer').style.display = 'none';
             document.getElementById('leaderboardContainer').style.display = 'block';
             loadLeaderboard();
         }
-
         function showTodayMatch() {
     document.getElementById('matchesContainer').style.display = 'block';
     document.getElementById('todayPredictionsContainer').style.display = 'block';
     document.getElementById('leaderboardContainer').style.display = 'none';
     document.getElementById('filterContainer').style.display = 'none'; // Hide the filter container
-    loadMatches(true);
+    loadMatches('today'); // Call loadMatches with the string 'today'
     loadTodayPredictions();
 }
+        
 
 function showSchedule() {
     document.getElementById('matchesContainer').style.display = 'block';
     document.getElementById('todayPredictionsContainer').style.display = 'none';
     document.getElementById('leaderboardContainer').style.display = 'none';
     document.getElementById('filterContainer').style.display = 'block'; // Show filter on schedule
-    loadMatches();
+    loadMatches('incomplete'); // Call loadMatches with 'incomplete' filter
 }
 
         document.getElementById('teamFilter').addEventListener('change', function() {
