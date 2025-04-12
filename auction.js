@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
     username: String,
     password: String,
     points: { type: Number, default: 0 },
+    loginCount: { type: Number, default: 0 }, // New field for login count
+    lastLogin: { type: Date }, // New field for last login time
 });
 
 const matchSchema = new mongoose.Schema({
@@ -59,6 +61,10 @@ app.post('/login', async (req, res) => {
         }
         const passwordMatch = await bcrypt.compare(password, user.password);
         if (passwordMatch) {
+            // Update login count and last login time
+            user.loginCount = (user.loginCount || 0) + 1;
+            user.lastLogin = new Date();
+            await user.save();
             res.json({ success: true, user: { _id: user._id, username: user.username } });
         } else {
             res.json({ success: false, message: 'Invalid password' });
