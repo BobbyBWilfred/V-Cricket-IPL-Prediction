@@ -280,30 +280,97 @@
             loadMatches();
         }
 
-function showTodayMatch() {
-            document.getElementById('matchesContainer').style.display = 'none';
+        function showTodayMatch() {
+    document.getElementById('matchesContainer').style.display = 'none';
+    document.getElementById('todayPredictionsContainer').style.display = 'block';
+    document.getElementById('leaderboardContainer').style.display = 'none';
+    document.getElementById('filterContainer').style.display = 'none';
+
+    document.getElementById('teamFilter').removeEventListener('change', applyFilters);
+    document.getElementById('statusFilter').removeEventListener('change', applyFilters);
+
+    loadTodayScheduleAndPredictions();
+}
+
+async function loadTodayScheduleAndPredictions() {
+    try {
+        const response = await axios.get('/matches');
+        const matches = response.data;
+
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+        const todayMatches = matches.filter(match => {
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
+        });
+
+        const todayPredictionsList = document.getElementById('todayPredictionsList');
+        todayPredictionsList.innerHTML = '';
+
+        if (todayMatches.length === 0) {
+            todayPredictionsList.innerHTML = '<p>No matches scheduled for today.</p>';
             document.getElementById('todayPredictionsContainer').style.display = 'block';
-            document.getElementById('leaderboardContainer').style.display = 'none';
-            document.getElementById('filterContainer').style.display = 'none';
-
-            document.getElementById('teamFilter').removeEventListener('change', applyFilters);
-            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
-
-            loadMatches(true);
-            loadTodayPredictions();
+            return;
         }
 
-
-
-        document.getElementById('teamFilter').addEventListener('change', function() {
-            const selectedTeam = this.value;
-            if (selectedTeam) {
-                const filteredMatches = matches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-                displayMatches(filteredMatches);
-            } else {
-                displayMatches(matches);
-            }
+        todayMatches.forEach(match => {
+            const matchDiv = document.createElement('div');
+            matchDiv.classList.add('match-item');
+            matchDiv.innerHTML += `
+                <h3>${match.homeTeam} vs ${match.awayTeam}</h3>
+                <p>${formatDateTime(match.date)} (${match.venue})</p>
+                <p>Your Prediction:</p>
+                <div id="prediction-${match._id}">Loading...</div>
+                <hr>
+            `;
+            todayPredictionsList.appendChild(matchDiv);
+            loadUserPredictionForMatch(match._id); // Load and display user's prediction for each match
         });
+
+        document.getElementById('todayPredictionsContainer').style.display = 'block';
+        loadTodayPredictions(); // Still call this to display all predictions grouped by match
+    } catch (error) {
+        console.error('Error loading today\'s schedule and predictions:', error);
+        Swal.fire('Error', 'Failed to load today\'s matches and predictions', 'error');
+    }
+}
+
+async function loadUserPredictionForMatch(matchId) {
+    if (!currentUser) return;
+    try {
+        const response = await axios.get(`/prediction/${matchId}/${currentUser._id}`);
+        const predictionData = response.data;
+        const predictionDiv = document.getElementById(`prediction-${matchId}`);
+        if (predictionData && predictionData.predictedTeam) {
+            predictionDiv.textContent = predictionData.predictedTeam;
+            if (predictionData.winner) {
+                if (predictionData.winner === predictionData.predictedTeam) {
+                    predictionDiv.classList.add('correct');
+                    predictionDiv.textContent += ` (Correct! ${predictionData.pointsGiven !== undefined ? predictionData.pointsGiven : 'Points'} awarded)`;
+                } else {
+                    predictionDiv.classList.add('wrong');
+                    predictionDiv.textContent += ` (Wrong! Winner: ${predictionData.winner})`;
+                }
+            }
+        } else {
+            predictionDiv.textContent = 'No prediction yet.';
+        }
+    } catch (error) {
+        console.error(`Error loading prediction for match ${matchId}:`, error);
+        document.getElementById(`prediction-${matchId}`).textContent = 'Error loading prediction.';
+    }
+}
 
         async function predict(matchId, team) {
             const match = matches.find(m => m._id === matchId);
