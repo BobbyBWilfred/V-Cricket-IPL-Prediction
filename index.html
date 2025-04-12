@@ -301,6 +301,31 @@ async function showTodayMatch() {
 
     await loadTodayMatchesAndPredictions(); // Combined function
 }
+async function predict(matchId, predictedTeam) {
+    if (!currentUser) {
+        Swal.fire('Error', 'You must be logged in to make a prediction.', 'error');
+        return;
+    }
+
+    try {
+        const response = await axios.post('/predict', {
+            userId: currentUser._id,
+            matchId: matchId,
+            predictedTeam: predictedTeam
+        });
+
+        if (response.data.success) {
+            Swal.fire('Success', `You predicted ${predictedTeam} for this match!`, 'success').then(() => {
+                showTodayMatch(); // Reload today's matches and predictions to update the UI
+            });
+        } else {
+            Swal.fire('Error', response.data.message || 'Failed to submit prediction.', 'error');
+        }
+    } catch (error) {
+        console.error('Prediction error:', error);
+        Swal.fire('Error', 'Failed to submit prediction.', 'error');
+    }
+}
 
 async function loadTodayMatchesAndPredictions() {
     try {
