@@ -39,7 +39,8 @@ const predictionSchema = new mongoose.Schema({
     matchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Match' },
     predictedTeam: String,
     hasChanged: { type: Boolean, default: false },
-    pointsAwarded: { type: Boolean, default: false } // Add this field
+    pointsAwarded: { type: Boolean, default: false }, // Add this field
+    pointsGiven: { type: Number } // To store the number of points awarded (1 or 3)
 });
 
 const User = mongoose.model('User', userSchema);
@@ -93,23 +94,32 @@ async function updatePointsForAllUsers() {
 
         for (const match of matches) {
             console.log(`Checking match: ${match.homeTeam} vs ${match.awayTeam}, Winner: ${match.winner}`);
-            const predictions = await Prediction.find({ matchId: match._id }); // Get all predictions for the match
-            console.log(`Predictions for match ${match._id}:`, predictions);
+            const predictions = await Prediction.find({ matchId: match._id, pointsAwarded: false }); // Only check predictions where points haven't been awarded
+            console.log(`New predictions for match ${match._id} (not yet awarded):`, predictions);
+
+            const matchDate = new Date(match.date);
+            // Ensure the date is treated as UTC before timezone conversion
+            const utcMatchDate = new Date(match.date);
+            const dayOfWeekIST = new Date(utcMatchDate.getTime() + (5.5 * 60 * 60 * 1000)).getDay();
+            const isWeekendMatchIST = (dayOfWeekIST === 0 || dayOfWeekIST === 6);
+            const pointsToAward = isWeekendMatchIST ? 3 : 1;
 
             for (const prediction of predictions) {
                 console.log(`Checking prediction for user ${prediction.userId}: Predicted ${prediction.predictedTeam}`);
-                if (prediction.predictedTeam === match.winner && !prediction.pointsAwarded) {
-                    await User.updateOne({ _id: prediction.userId }, { $inc: { points: 1 } });
-                    await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true });
-                    console.log(`Points updated for user ${prediction.userId} for match ${match._id}`);
+                if (prediction.predictedTeam === match.winner) {
+                    await User.updateOne({ _id: prediction.userId }, { $inc: { points: pointsToAward } });
+                    await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true, pointsGiven: pointsToAward });
+                    console.log(`Points (${pointsToAward}) updated for user ${prediction.userId} for match ${match._id}`);
                 } else {
-                    console.log(`No points awarded for user ${prediction.userId} for match ${match._id}`);
+                    await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true, pointsGiven: 0 }); // Mark as awarded even if wrong
+                    console.log(`Incorrect prediction, points marked as awarded for user ${prediction.userId} for match ${match._id}`);
                 }
             }
-            // ... (your points update logic)
+            console.log('Points update process completed for this match.');
+        }
         console.log('Points update process completed for all matches.');
         io.emit('pointsUpdated');
-        console.log("Socket.io event pointsUpdated was emited");}
+        console.log("Socket.io event pointsUpdated was emitted");
     } catch (error) {
         console.error('Points update error:', error);
     }
@@ -175,12 +185,13 @@ app.get('/prediction/:matchId/:userId', async (req, res) => {
         const prediction = await Prediction.findOne({ matchId, userId });
 
         if (!prediction) {
-            return res.json({ predictedTeam: null, pointsAwarded: false });
+            return res.json({ predictedTeam: null, pointsAwarded: false, pointsGiven: null });
         }
 
         res.json({
             predictedTeam: prediction.predictedTeam,
-            pointsAwarded: prediction.pointsAwarded
+            pointsAwarded: prediction.pointsAwarded,
+            pointsGiven: prediction.pointsGiven
         });
     } catch (error) {
         console.error('Get prediction error:', error);
@@ -256,7 +267,7 @@ app.get('/today-predictions', async (req, res) => {
 });
 app.post('/updateUserPoints', async (req, res) => {
     const { userId, matchId } = req.body;
-    console.log(`Updating points for user ${userId} and match ${matchId}`); // Added log
+    console.log(`Manual updateUserPoints triggered for user ${userId} and match ${matchId}`); // Added log
     try {
         const match = await Match.findById(matchId);
         console.log("match data:", match);
@@ -264,16 +275,26 @@ app.post('/updateUserPoints', async (req, res) => {
         console.log("prediction data:", prediction);
 
         if (match && prediction && match.winner === prediction.predictedTeam && !prediction.pointsAwarded) {
-            await User.updateOne({ _id: userId }, { $inc: { points: 1 } });
-            await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true });
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(match.date);
+            const dayOfWeekIST = new Date(utcMatchDate.getTime() + (5.5 * 60 * 60 * 1000)).getDay();
+            const isWeekendMatchIST = (dayOfWeekIST === 0 || dayOfWeekIST === 6);
+            const pointsToAward = isWeekendMatchIST ? 3 : 1;
+
+            await User.updateOne({ _id: userId }, { $inc: { points: pointsToAward } });
+            await Prediction.updateOne({ _id: prediction._id }, { pointsAwarded: true, pointsGiven: pointsToAward });
 
             const updatedUser = await User.findById(userId);
             res.json({ message: 'User points updated', user: updatedUser });
-            console.log(`Points updated for user ${userId} for match ${matchId}`);
+            console.log(`Points (${pointsToAward}) updated for user ${userId} for match ${matchId}`);
             io.emit('pointsUpdated');
-            console.log("Socket.io event pointsUpdated was emited");
-        } else {
-            res.status(400).json({ message: 'User points not updated' });
+            console.log("Socket.io event pointsUpdated was emitted");
+        } else if (prediction && prediction.pointsAwarded) {
+            res.status(400).json({ message: 'Points already awarded for this prediction.' });
+            console.log(`Points already awarded for user ${userId} and match ${matchId}`);
+        }
+         else {
+            res.status(400).json({ message: 'User points not updated (either incorrect prediction or match not finished).' });
             console.log(`Points not updated for user ${userId} for match ${matchId}`);
         }
     } catch (error) {
