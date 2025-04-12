@@ -280,7 +280,7 @@
             loadMatches();
         }
 
-        function showTodayMatch() {
+function showTodayMatch() {
     document.getElementById('matchesContainer').style.display = 'none';
     document.getElementById('todayPredictionsContainer').style.display = 'block';
     document.getElementById('leaderboardContainer').style.display = 'none';
@@ -292,6 +292,33 @@
     loadTodayScheduleAndPredictions();
 }
 
+
+
+async function loadUserPredictionForMatch(matchId) {
+    if (!currentUser) return;
+    try {
+        const response = await axios.get(`/prediction/${matchId}/${currentUser._id}`);
+        const predictionData = response.data;
+        const predictionDiv = document.getElementById(`prediction-${matchId}`);
+        if (predictionData && predictionData.predictedTeam) {
+            predictionDiv.textContent = predictionData.predictedTeam;
+            if (predictionData.winner) {
+                if (predictionData.winner === predictionData.predictedTeam) {
+                    predictionDiv.classList.add('correct');
+                    predictionDiv.textContent += ` (Correct! ${predictionData.pointsGiven !== undefined ? predictionData.pointsGiven : 'Points'} awarded)`;
+                } else {
+                    predictionDiv.classList.add('wrong');
+                    predictionDiv.textContent += ` (Wrong! Winner: ${predictionData.winner})`;
+                }
+            }
+        } else {
+            predictionDiv.textContent = 'No prediction yet.';
+        }
+    } catch (error) {
+        console.error(`Error loading prediction for match ${matchId}:`, error);
+        document.getElementById(`prediction-${matchId}`).textContent = 'Error loading prediction.';
+    }
+}
 async function loadTodayScheduleAndPredictions() {
     try {
         const response = await axios.get('/matches');
@@ -324,7 +351,7 @@ async function loadTodayScheduleAndPredictions() {
             return;
         }
 
-        todayMatches.forEach(match => {
+        for (const match of todayMatches) {
             const matchDiv = document.createElement('div');
             matchDiv.classList.add('match-item');
             matchDiv.innerHTML += `
@@ -335,8 +362,8 @@ async function loadTodayScheduleAndPredictions() {
                 <hr>
             `;
             todayPredictionsList.appendChild(matchDiv);
-            loadUserPredictionForMatch(match._id); // Load and display user's prediction for each match
-        });
+            await loadUserPredictionForMatch(match._id); // Use await to ensure predictions are loaded in order
+        }
 
         document.getElementById('todayPredictionsContainer').style.display = 'block';
         loadTodayPredictions(); // Still call this to display all predictions grouped by match
@@ -345,33 +372,6 @@ async function loadTodayScheduleAndPredictions() {
         Swal.fire('Error', 'Failed to load today\'s matches and predictions', 'error');
     }
 }
-
-async function loadUserPredictionForMatch(matchId) {
-    if (!currentUser) return;
-    try {
-        const response = await axios.get(`/prediction/${matchId}/${currentUser._id}`);
-        const predictionData = response.data;
-        const predictionDiv = document.getElementById(`prediction-${matchId}`);
-        if (predictionData && predictionData.predictedTeam) {
-            predictionDiv.textContent = predictionData.predictedTeam;
-            if (predictionData.winner) {
-                if (predictionData.winner === predictionData.predictedTeam) {
-                    predictionDiv.classList.add('correct');
-                    predictionDiv.textContent += ` (Correct! ${predictionData.pointsGiven !== undefined ? predictionData.pointsGiven : 'Points'} awarded)`;
-                } else {
-                    predictionDiv.classList.add('wrong');
-                    predictionDiv.textContent += ` (Wrong! Winner: ${predictionData.winner})`;
-                }
-            }
-        } else {
-            predictionDiv.textContent = 'No prediction yet.';
-        }
-    } catch (error) {
-        console.error(`Error loading prediction for match ${matchId}:`, error);
-        document.getElementById(`prediction-${matchId}`).textContent = 'Error loading prediction.';
-    }
-}
-
         async function predict(matchId, team) {
             const match = matches.find(m => m._id === matchId);
             if (isMatchStarted(match.date)) {
