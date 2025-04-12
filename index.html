@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auction.css">
 
     <title>IPL Match Predictor</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -367,7 +367,7 @@ function showTodayMatch() {
         predictionsList.innerHTML = '';
 
         if (!predictions || predictions.length === 0) {
-            console.log('No predictions found for today.');
+            console.log('No predictions found.');
             predictionsList.innerHTML = '<p>No predictions for today yet.</p>';
             document.getElementById('todayPredictionsContainer').style.display = 'block';
             return;
@@ -378,23 +378,18 @@ function showTodayMatch() {
         const tomorrow = new Date(today);
         tomorrow.setUTCDate(today.getUTCDate() + 1);
 
-        const targetDate = new Date('2024-04-07T00:00:00.000Z'); // April 7, 2024, UTC
-    const nextDay = new Date(targetDate);
-    nextDay.setUTCDate(targetDate.getUTCDate() + 1);
-
-    const todayMatches = matches.filter(match => {
-        const matchDate = new Date(match.date);
-        const utcMatchDate = new Date(
-            matchDate.getUTCFullYear(),
-            matchDate.getUTCMonth(),
-            matchDate.getUTCDate(),
-            matchDate.getUTCHours(),
-            matchDate.getUTCMinutes(),
-            matchDate.getUTCSeconds()
-        );
-        return utcMatchDate >= targetDate && utcMatchDate < nextDay;
-    });
-
+        const todayMatches = matches.filter(match => {
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
+        });
 
         console.log('Matches for today:', todayMatches);
 
@@ -406,22 +401,24 @@ function showTodayMatch() {
 
         console.log('Predictions for today:', predictionsForToday);
 
-        if (predictionsForToday.length === 0) {
-            console.log('No predictions for today\'s matches.');
-            predictionsList.innerHTML = '<p>No predictions for today\'s matches.</p>';
+        if (!currentUser) {
+            predictionsList.innerHTML = '<p>Please log in to see predictions.</p>';
             document.getElementById('todayPredictionsContainer').style.display = 'block';
             return;
         }
 
-        // Debugging: Check currentUser and predictionsForToday
-        console.log("currentUser:", currentUser);
-        console.log("predictionsForToday:", predictionsForToday);
-
-        // Corrected comparison: Use username instead of userId
         const userHasPredictedToday = predictionsForToday.some(prediction => prediction.username === currentUser.username);
 
-        if (!userHasPredictedToday) {
-            predictionsList.innerHTML = '<p>Make a prediction to see today\'s predictions.</p>';
+        if (!userHasPredictedToday && todayMatches.length > 0) {
+            predictionsList.innerHTML = '<p>Make a prediction for today\'s match to see other predictions.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
+        } else if (todayMatches.length === 0) {
+            predictionsList.innerHTML = '<p>No matches scheduled for today.</p>';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            return;
+        } else if (predictionsForToday.length === 0) {
+            predictionsList.innerHTML = '<p>No predictions made for today\'s matches yet.</p>';
             document.getElementById('todayPredictionsContainer').style.display = 'block';
             return;
         }
