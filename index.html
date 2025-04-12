@@ -182,6 +182,17 @@ function getTeamLogo(teamName) {
                 const matchDiv = document.createElement('div');
                 matchDiv.classList.add('match-item');
 
+                // Check if the match has started and has no winner
+                const hasStarted = isMatchStarted(match.date);
+                const isOngoing = hasStarted && !match.winner;
+
+                if (isOngoing) {
+                    const ongoingMessage = document.createElement('div');
+                    ongoingMessage.classList.add('match-ongoing-message');
+                    ongoingMessage.textContent = 'Match Ongoing';
+                    matchDiv.appendChild(ongoingMessage);
+                }
+
                 let predictionDisplay = '';
 
                 if (userPredictions[match._id]) {
@@ -204,7 +215,7 @@ function getTeamLogo(teamName) {
                     predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
                 }
 
-                matchDiv.innerHTML = `
+                matchDiv.innerHTML += `
                     <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
                     <p>${formatDateTime(match.date)} (${match.venue})</p>
                     ${predictionDisplay}
