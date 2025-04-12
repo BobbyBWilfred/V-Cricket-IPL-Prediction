@@ -158,6 +158,17 @@ app.post('/predict', async (req, res) => {
     }
 });
 
+app.post('/admin/trigger-leaderboard-update', async (req, res) => {
+    console.log('Manual leaderboard update triggered by admin.');
+    try {
+        await updatePointsForAllUsers();
+        res.json({ message: 'Leaderboard update triggered successfully.' });
+    } catch (error) {
+        console.error('Error triggering leaderboard update:', error);
+        res.status(500).json({ message: 'Failed to trigger leaderboard update.' });
+    }
+});
+
 app.get('/prediction/:matchId/:userId', async (req, res) => {
     const { matchId, userId } = req.params;
     try {
