@@ -234,6 +234,34 @@ th {
     background: rgba(255, 255, 255, 0.4);
 }
 
+/* Style the dropdown options */
+#teamFilter option,
+#statusFilter option {
+    color: black; /* Default text color for options */
+    background-color: white; /* Default background color for options */
+}
+
+/* Style the dropdown options on hover */
+#teamFilter option:hover,
+#statusFilter option:hover {
+    background-color: #007bff !important; /* Use !important to ensure override */
+    color: white !important;
+}
+
+/* Style the selected option */
+#teamFilter option:checked,
+#statusFilter option:checked {
+    background-color: #28a745 !important; /* Use !important to ensure override */
+    color: white !important;
+}
+
+/* Style the focused state of the select element itself */
+#teamFilter:focus,
+#statusFilter:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 /* Button Container */
 .button-container {
     display: flex;
