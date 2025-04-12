@@ -285,15 +285,85 @@
             loadMatches();
         }
         function showTodayMatch() {
-    document.getElementById('matchesContainer').style.display = 'block';
-    document.getElementById('todayPredictionsContainer').style.display = 'none'; // Hide predictions initially
+    document.getElementById('matchesContainer').style.display = 'none'; // Hide the general matches container
+    document.getElementById('filterContainer').style.display = 'none';   // Hide the filter container
+    document.getElementById('todayPredictionsContainer').style.display = 'block'; // Show the today's predictions container
     document.getElementById('leaderboardContainer').style.display = 'none';
-    document.getElementById('filterContainer').style.display = 'block'; // Keep the filter visible if you want
 
-    document.getElementById('teamFilter').value = '';
-    document.getElementById('statusFilter').value = '';
+    loadTodayMatchesAndPredictions(); // New function to load today's data
+}
 
-    loadMatches(true); // Load and display only today's matches
+async function loadTodayMatchesAndPredictions() {
+    try {
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+        const responseMatches = await axios.get('/matches');
+        const todayMatches = responseMatches.data.filter(match => {
+            const matchDate = new Date(match.date);
+            const utcMatchDate = new Date(
+                matchDate.getUTCFullYear(),
+                matchDate.getUTCMonth(),
+                matchDate.getUTCDate(),
+                matchDate.getUTCHours(),
+                matchDate.getUTCMinutes(),
+                matchDate.getUTCSeconds()
+            );
+            return utcMatchDate >= today && utcMatchDate < tomorrow;
+        });
+
+        console.log('Today\'s Matches:', todayMatches);
+
+        const responsePredictions = await axios.get('/today-predictions');
+        const allTodayPredictions = responsePredictions.data;
+        console.log('All Today\'s Predictions:', allTodayPredictions);
+
+        const todayPredictionsList = document.getElementById('todayPredictionsList');
+        todayPredictionsList.innerHTML = '';
+
+        if (todayMatches.length === 0) {
+            todayPredictionsList.innerHTML = '<p>No matches scheduled for today.</p>';
+            return;
+        }
+
+        if (allTodayPredictions.length === 0) {
+            todayPredictionsList.innerHTML = '<p>No predictions made for today\'s matches yet.</p>';
+            return;
+        }
+
+        const predictionsByMatch = {};
+
+        allTodayPredictions.forEach(prediction => {
+            const matchKey = `${prediction.homeTeam} vs ${prediction.awayTeam}`;
+            if (!predictionsByMatch[matchKey]) {
+                predictionsByMatch[matchKey] = { homeTeam: prediction.homeTeam, awayTeam: prediction.awayTeam, predictions: [] };
+            }
+            predictionsByMatch[matchKey].predictions.push({ username: prediction.username, predictedTeam: prediction.predictedTeam });
+        });
+
+        console.log('Predictions by Match:', predictionsByMatch);
+
+        for (const matchKey in predictionsByMatch) {
+            const matchInfo = predictionsByMatch[matchKey];
+            const matchDiv = document.createElement('div');
+            matchDiv.innerHTML = `
+                <h3>${matchInfo.homeTeam} vs ${matchInfo.awayTeam}</h3>
+                <ul>
+                    ${matchInfo.predictions.map(p => `<li>${p.username} predicted: ${p.predictedTeam}</li>`).join('')}
+                </ul>
+                <hr>
+            `;
+            todayPredictionsList.appendChild(matchDiv);
+        }
+
+        document.getElementById('todayPredictionsContainer').style.display = 'block';
+
+    } catch (error) {
+        console.error('Error loading today\'s matches and predictions:', error);
+        Swal.fire('Error', 'Failed to load today\'s matches and predictions', 'error');
+    }
 }
 
 
