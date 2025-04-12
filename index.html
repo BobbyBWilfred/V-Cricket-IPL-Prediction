@@ -38,8 +38,8 @@
             <label for="statusFilter">Filter by Status:</label>
             <select id="statusFilter">
                 <option value="">All Matches</option>
-                <option value="completed">Matches Played</option>
-                <option value="incomplete">Matches Yet To Be Played</option>
+                <option value="completed">Completed Matches</option>
+                <option value="incomplete">Incomplete Matches</option>
             </select>
         </div>
         <div id="matchesList"></div>
@@ -130,183 +130,170 @@
             return teamColors[teamName] || '#808080';
         }
 
-        async function updateUserPointsClient(userId, matchId) {
-            try {
-                const response = await axios.post('/updateUserPoints', { userId: userId, matchId: matchId });
-                console.log("updateUserPoints response:", response);
-                if (response.data.message === 'User points updated') {
-                    Swal.fire('Success', 'Points updated!', 'success');
-                } else {
-                    Swal.fire('Error', 'Failed to update points', 'error');
-                }
-            } catch (error) {
-                console.error("error updating user points", error);
-                Swal.fire('Error', "Failed to update points", 'error');
-            }
-        }
 
-        function displayMatches(matchesToDisplay) {
-            const matchesList = document.getElementById('matchesList');
-            matchesList.innerHTML = '';
+        async function displayMatches(matchesToDisplay) {
+            const matchesList = document.getElementById('matchesList');
+            matchesList.innerHTML = '';
 
-            if (!currentUser) return;
+            if (!currentUser) return;
 
-            axios.get(`/user-predictions/${currentUser._id}`)
-                .then(userPredictionsRes => {
-                    const userPredictions = userPredictionsRes.data.reduce((acc, pred) => {
-                        acc[pred.matchId] = pred;
-                        return acc;
-                    }, {});
+            axios.get(`/user-predictions/${currentUser._id}`)
+                .then(userPredictionsRes => {
+                    const userPredictions = userPredictionsRes.data.reduce((acc, pred) => {
+                        acc[pred.matchId] = pred;
+                        return acc;
+                    }, {});
 
-                    matchesToDisplay.forEach(async match => {
-                        const matchDiv = document.createElement('div');
-                        matchDiv.classList.add('match-item');
+                    matchesToDisplay.forEach(async match => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.classList.add('match-item');
 
-                        let predictionDisplay = '';
+                        let predictionDisplay = '';
 
-                        if (userPredictions[match._id]) {
-                            predictionDisplay = `<p class="prediction-result">You predicted: ${userPredictions[match._id].predictedTeam}</p>`;
+                        if (userPredictions[match._id]) {
+                            predictionDisplay = `<p class="prediction-result">You predicted: ${userPredictions[match._id].predictedTeam}</p>`;
 
-                            if (match.winner) {
-                                if (match.winner === userPredictions[match._id].predictedTeam) {
-                                    if (userPredictions[match._id].pointsAwarded) {
-                                        predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
-                                    } else {
-                                        await updateUserPointsClient(currentUser._id, match._id);
-                                        predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
-                                    }
-                                } else {
-                                    predictionDisplay += '<p class="prediction-result">Wrong! You get 0 points.</p>';
-                                }
-                                predictionDisplay += `<p class="prediction-result">Winner was: ${match.winner}</p>`;
-                            }
-                        } else {
-                            predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
-                        }
+                            if (match.winner) {
+                                if (match.winner === userPredictions[match._id].predictedTeam) {
+                                    if (userPredictions[match._id].pointsAwarded) {
+                                        predictionDisplay += `<p class="prediction-result correct">Correct! ${userPredictions[match._id].pointsGiven} point${userPredictions[match._id].pointsGiven > 1 ? 's' : ''} awarded.</p>`;
+                                    } else {
+                                        predictionDisplay += `<p class="prediction-result correct">Correct! (Points will be updated)</p>`;
+                                    }
+                                } else {
+                                    predictionDisplay += '<p class="prediction-result wrong">Wrong! 0 points.</p>';
+                                }
+                                predictionDisplay += `<p class="prediction-result">Winner was: ${match.winner}</p>`;
+                            }
+                        } else {
+                            predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
+                        }
 
-                        matchDiv.innerHTML = `
-                            <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
-                            <p>${formatDateTime(match.date)} (${match.venue})</p>
-                            ${predictionDisplay}
-                            <div style="display: flex; justify-content: center;">
-                                <div class="team-circle" onclick="predict('${match._id}', '${match.homeTeam}')" style="background-color: ${getTeamColor(match.homeTeam)}">${match.homeTeam}</div>
-                                <div class="team-circle" onclick="predict('${match._id}', '${match.awayTeam}')" style="background-color: ${getTeamColor(match.awayTeam)}">${match.awayTeam}</div>
-                            </div>
-                        `;
+                        matchDiv.innerHTML = `
+                            <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
+                            <p>${formatDateTime(match.date)} (${match.venue})</p>
+                            ${predictionDisplay}
+                            <div style="display: flex; justify-content: center;">
+                                <div class="team-circle" onclick="predict('${match._id}', '${match.homeTeam}')" style="background-color: ${getTeamColor(match.homeTeam)}">${match.homeTeam}</div>
+                                <div class="team-circle" onclick="predict('${match._id}', '${match.awayTeam}')" style="background-color: ${getTeamColor(match.awayTeam)}">${match.awayTeam}</div>
+                            </div>
+                        `;
 
-                        matchesList.appendChild(matchDiv);
-                    });
-                });
-        }
-
-        async function loadMatches(filterToday = false) {
-    try {
-        const response = await axios.get('/matches');
-        matches = response.data;
-
+                        matchesList.appendChild(matchDiv);
+                    });
+                });
+        }
+        function applyFilters() {
         let matchesToDisplay = matches;
 
-        if (filterToday) {
-            const today = new Date();
-            today.setUTCHours(0, 0, 0, 0);
-            const tomorrow = new Date(today);
-            tomorrow.setUTCDate(today.getUTCDate() + 1);
+        const selectedTeam = document.getElementById('teamFilter').value;
+        const selectedStatus = document.getElementById('statusFilter').value;
 
-            matchesToDisplay = matches.filter(match => {
-                const matchDate = new Date(match.date);
-                const utcMatchDate = new Date(
-                    matchDate.getUTCFullYear(),
-                    matchDate.getUTCMonth(),
-                    matchDate.getUTCDate(),
-                    matchDate.getUTCHours(),
-                    matchDate.getUTCMinutes(),
-                    matchDate.getUTCSeconds()
-                );
-                return utcMatchDate >= today && utcMatchDate < tomorrow;
-            });
+        if (selectedTeam) {
+            matchesToDisplay = matchesToDisplay.filter(match =>
+                match.homeTeam === selectedTeam || match.awayTeam === selectedTeam
+            );
         }
 
-        const teamFilter = document.getElementById('teamFilter');
-        teamFilter.innerHTML = '<option value="">All Teams</option>';
-        const uniqueTeams = [...new Set(matches.flatMap(match => [match.homeTeam, match.awayTeam]))];
-        uniqueTeams.forEach(team => {
-            const option = document.createElement('option');
-            option.value = team;
-            option.textContent = team;
-            teamFilter.appendChild(option);
-        });
-
-        // Add status filter
-        const statusFilter = document.getElementById('statusFilter');
-        statusFilter.addEventListener('change', function() {
-            const selectedStatus = this.value;
-            let filteredMatches = matches;
-
-            if (selectedStatus === 'completed') {
-                filteredMatches = matches.filter(match => match.winner);
-            } else if (selectedStatus === 'incomplete') {
-                filteredMatches = matches.filter(match => !match.winner);
-            }
-
-            // Apply team filter if it's already selected
-            const selectedTeam = teamFilter.value;
-            if (selectedTeam) {
-                filteredMatches = filteredMatches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-            }
-
-            displayMatches(filteredMatches);
-        });
-
-        // Apply team filter logic
-        teamFilter.addEventListener('change', function() {
-            const selectedTeam = this.value;
-            let filteredMatches = matches;
-
-            if (selectedTeam) {
-                filteredMatches = matches.filter(match => match.homeTeam === selectedTeam || match.awayTeam === selectedTeam);
-            }
-
-            // Apply status filter if it's already selected
-            const selectedStatus = statusFilter.value;
-            if (selectedStatus === 'completed') {
-                filteredMatches = filteredMatches.filter(match => match.winner);
-            } else if (selectedStatus === 'incomplete') {
-                filteredMatches = filteredMatches.filter(match => !match.winner);
-            }
-
-            displayMatches(filteredMatches);
-        });
+        if (selectedStatus === 'completed') {
+            matchesToDisplay = matchesToDisplay.filter(match => match.winner);
+        } else if (selectedStatus === 'incomplete') {
+            matchesToDisplay = matchesToDisplay.filter(match => !match.winner);
+        }
 
         displayMatches(matchesToDisplay);
-    } catch (error) {
-        console.error('Load matches error:', error);
-        Swal.fire('Error', 'Failed to load matches', 'error');
     }
-}
+
+    async function loadMatches(filterToday = false) {
+        try {
+            const response = await axios.get('/matches');
+            matches = response.data;
+
+            let matchesToDisplay = matches;
+
+            if (filterToday) {
+                const today = new Date();
+                today.setUTCHours(0, 0, 0, 0);
+                const tomorrow = new Date(today);
+                tomorrow.setUTCDate(today.getUTCDate() + 1);
+
+                matchesToDisplay = matches.filter(match => {
+                    const matchDate = new Date(match.date);
+                    const utcMatchDate = new Date(
+                        matchDate.getUTCFullYear(),
+                        matchDate.getUTCMonth(),
+                        matchDate.getUTCDate(),
+                        matchDate.getUTCHours(),
+                        matchDate.getUTCMinutes(),
+                        matchDate.getUTCSeconds()
+                    );
+                    return utcMatchDate >= today && utcMatchDate < tomorrow;
+                });
+            }
+
+            const teamFilter = document.getElementById('teamFilter');
+            teamFilter.innerHTML = '<option value="">All Teams</option>';
+            const uniqueTeams = [...new Set(matches.flatMap(match => [match.homeTeam, match.awayTeam]))];
+            uniqueTeams.forEach(team => {
+                const option = document.createElement('option');
+                option.value = team;
+                option.textContent = team;
+                teamFilter.appendChild(option);
+            });
+
+            // Remove existing event listeners
+            teamFilter.removeEventListener('change', applyFilters);
+            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
+
+            // Add new event listeners
+            teamFilter.addEventListener('change', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+            displayMatches(matchesToDisplay); // Initial display
+        } catch (error) {
+            console.error('Load matches error:', error);
+            Swal.fire('Error', 'Failed to load matches', 'error');
+        }
+    }
 
         function showLeaderboard() {
             document.getElementById('matchesContainer').style.display = 'none';
             document.getElementById('todayPredictionsContainer').style.display = 'none';
             document.getElementById('leaderboardContainer').style.display = 'block';
+            document.getElementById('filterContainer').style.display = 'none';
+
+            document.getElementById('teamFilter').removeEventListener('change', applyFilters);
+            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
+
             loadLeaderboard();
         }
+    
+        function showSchedule() {
+            document.getElementById('matchesContainer').style.display = 'block';
+            document.getElementById('todayPredictionsContainer').style.display = 'none';
+            document.getElementById('leaderboardContainer').style.display = 'none';
+            document.getElementById('filterContainer').style.display = 'block';
 
-        function showTodayMatch() {
-    document.getElementById('matchesContainer').style.display = 'block';
-    document.getElementById('todayPredictionsContainer').style.display = 'block';
-    document.getElementById('leaderboardContainer').style.display = 'none';
-    document.getElementById('filterContainer').style.display = 'none'; // Hide the filter container
-    loadMatches(true);
-    loadTodayPredictions();
-}
+            document.getElementById('teamFilter').value = '';
+            document.getElementById('statusFilter').value = '';
 
-function showSchedule() {
-    document.getElementById('matchesContainer').style.display = 'block';
-    document.getElementById('todayPredictionsContainer').style.display = 'none';
-    document.getElementById('leaderboardContainer').style.display = 'none';
-    document.getElementById('filterContainer').style.display = 'block'; // Show filter on schedule
-    loadMatches();
-}
+            loadMatches();
+        }
+
+function showTodayMatch() {
+            document.getElementById('matchesContainer').style.display = 'none';
+            document.getElementById('todayPredictionsContainer').style.display = 'block';
+            document.getElementById('leaderboardContainer').style.display = 'none';
+            document.getElementById('filterContainer').style.display = 'none';
+
+            document.getElementById('teamFilter').removeEventListener('change', applyFilters);
+            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
+
+            loadMatches(true);
+            loadTodayPredictions();
+        }
+
+
 
         document.getElementById('teamFilter').addEventListener('change', function() {
             const selectedTeam = this.value;
@@ -376,18 +363,23 @@ function showSchedule() {
         const tomorrow = new Date(today);
         tomorrow.setUTCDate(today.getUTCDate() + 1);
 
-        const todayMatches = matches.filter(match => {
-            const matchDate = new Date(match.date);
-            const utcMatchDate = new Date(
-                matchDate.getUTCFullYear(),
-                matchDate.getUTCMonth(),
-                matchDate.getUTCDate(),
-                matchDate.getUTCHours(),
-                matchDate.getUTCMinutes(),
-                matchDate.getUTCSeconds()
-            );
-            return utcMatchDate >= today && utcMatchDate < tomorrow;
-        });
+        const targetDate = new Date('2024-04-07T00:00:00.000Z'); // April 7, 2024, UTC
+    const nextDay = new Date(targetDate);
+    nextDay.setUTCDate(targetDate.getUTCDate() + 1);
+
+    const todayMatches = matches.filter(match => {
+        const matchDate = new Date(match.date);
+        const utcMatchDate = new Date(
+            matchDate.getUTCFullYear(),
+            matchDate.getUTCMonth(),
+            matchDate.getUTCDate(),
+            matchDate.getUTCHours(),
+            matchDate.getUTCMinutes(),
+            matchDate.getUTCSeconds()
+        );
+        return utcMatchDate >= targetDate && utcMatchDate < nextDay;
+    });
+
 
         console.log('Matches for today:', todayMatches);
 
