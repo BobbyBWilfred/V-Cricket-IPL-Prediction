@@ -115,20 +115,21 @@
         }
 
         function getTeamColor(teamName) {
-            const teamColors = {
-                'Chennai Super Kings': '#FFD700',
-                'Mumbai Indians': '#006BB3',
-                'Royal Challengers Bangalore': '#ff002e',
-                'Kolkata Knight Riders': '#3D0075',
-                'Delhi Capitals': '#1779C2',
-                'Rajasthan Royals': '#174985',
-                'Punjab Kings': '#ff005a',
-                'Sunrisers Hyderabad': '#FF8200',
-                'Lucknow Super Giants': '#0000ff',
-                'Gujarat Titans': '#00e1ff'
-            };
-            return teamColors[teamName] || '#808080';
-        }
+    const teamColors = {
+        'Chennai Super Kings': '#FFF100',
+        'Mumbai Indians': '#004B8D',
+        'Royal Challengers Bangalore': '#DA1818', 
+        'Kolkata Knight Riders': '#2F0057',
+        'Delhi Capitals': '#0116CF',
+        'Rajasthan Royals': '#FF64B4',
+        'Punjab Kings': '#D60D47', 
+        'Sunrisers Hyderabad': '#EE7429',
+        'Lucknow Super Giants': '#1D4ED8',
+        'Gujarat Titans': '#0A1C34'
+    };
+    return teamColors[teamName] || '#808080'; 
+}
+
 
         async function updateUserPointsClient(userId, matchId) {
             try {
