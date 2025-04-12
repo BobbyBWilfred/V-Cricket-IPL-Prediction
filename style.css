@@ -31,8 +31,8 @@ body {
 /* In your auction.css */
 /* In your auction.css */
 .team-logo {
-    width: 100px; /* Increased size */
-    height: 100px; /* Increased size */
+    width: 130px; /* Increased size */
+    height: 130px; /* Increased size */
     border-radius: 50%;
     overflow: hidden;
     border: 1px solid white;
