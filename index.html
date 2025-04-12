@@ -130,6 +130,25 @@
     return teamColors[teamName] || '#808080'; 
 }
 
+function getTeamLogo(teamName) {
+    const logos = {
+        'Chennai Super Kings': './Chennai Super Kings.png',
+        'Mumbai Indians': './Mumbai Indians.png',
+        'Royal Challengers Bengaluru': './Royal Challengers Bangalore.png',
+        'Kolkata Knight Riders': './Kolkata Knight Riders.png',
+        'Delhi Capitals': './Delhi Capitals.jpg',
+        'Rajasthan Royals': './Rajasthan Royals.png',
+        'Punjab Kings': './Punjab Kings.png',
+        'Sunrisers Hyderabad': './Sunrisers Hyderabad.png',
+        'Lucknow Super Giants': './Lucknow Super Giants.png',
+        'Gujarat Titans': './Gujarat Titans.png'
+    };
+
+    return logos[teamName] || 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Crystal_Project_question.svg/240px-Crystal_Project_question.svg.png';
+}
+
+
+
 
         async function updateUserPointsClient(userId, matchId) {
             try {
@@ -147,58 +166,62 @@
         }
 
         function displayMatches(matchesToDisplay) {
-            const matchesList = document.getElementById('matchesList');
-            matchesList.innerHTML = '';
+    const matchesList = document.getElementById('matchesList');
+    matchesList.innerHTML = '';
 
-            if (!currentUser) return;
+    if (!currentUser) return;
 
-            axios.get(`/user-predictions/${currentUser._id}`)
-                .then(userPredictionsRes => {
-                    const userPredictions = userPredictionsRes.data.reduce((acc, pred) => {
-                        acc[pred.matchId] = pred;
-                        return acc;
-                    }, {});
+    axios.get(`/user-predictions/${currentUser._id}`)
+        .then(userPredictionsRes => {
+            const userPredictions = userPredictionsRes.data.reduce((acc, pred) => {
+                acc[pred.matchId] = pred;
+                return acc;
+            }, {});
 
-                    matchesToDisplay.forEach(async match => {
-                        const matchDiv = document.createElement('div');
-                        matchDiv.classList.add('match-item');
+            matchesToDisplay.forEach(async match => {
+                const matchDiv = document.createElement('div');
+                matchDiv.classList.add('match-item');
 
-                        let predictionDisplay = '';
+                let predictionDisplay = '';
 
-                        if (userPredictions[match._id]) {
-                            predictionDisplay = `<p class="prediction-result">You predicted: ${userPredictions[match._id].predictedTeam}</p>`;
+                if (userPredictions[match._id]) {
+                    predictionDisplay = `<p class="prediction-result">You predicted: ${userPredictions[match._id].predictedTeam}</p>`;
 
-                            if (match.winner) {
-                                if (match.winner === userPredictions[match._id].predictedTeam) {
-                                    if (userPredictions[match._id].pointsAwarded) {
-                                        predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
-                                    } else {
-                                        await updateUserPointsClient(currentUser._id, match._id);
-                                        predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
-                                    }
-                                } else {
-                                    predictionDisplay += '<p class="prediction-result">Wrong! You get 0 points.</p>';
-                                }
-                                predictionDisplay += `<p class="prediction-result">Winner was: ${match.winner}</p>`;
+                    if (match.winner) {
+                        if (match.winner === userPredictions[match._id].predictedTeam) {
+                            if (userPredictions[match._id].pointsAwarded) {
+                                predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
+                            } else {
+                                await updateUserPointsClient(currentUser._id, match._id);
+                                predictionDisplay += '<p class="prediction-result">Correct! 1 point awarded.</p>';
                             }
                         } else {
-                            predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
+                            predictionDisplay += '<p class="prediction-result">Wrong! You get 0 points.</p>';
                         }
+                        predictionDisplay += `<p class="prediction-result">Winner was: ${match.winner}</p>`;
+                    }
+                } else {
+                    predictionDisplay = '<p class="prediction-result">No prediction yet.</p>';
+                }
 
-                        matchDiv.innerHTML = `
-                            <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
-                            <p>${formatDateTime(match.date)} (${match.venue})</p>
-                            ${predictionDisplay}
-                            <div style="display: flex; justify-content: center;">
-                                <div class="team-circle" onclick="predict('${match._id}', '${match.homeTeam}')" style="background-color: ${getTeamColor(match.homeTeam)}">${match.homeTeam}</div>
-                                <div class="team-circle" onclick="predict('${match._id}', '${match.awayTeam}')" style="background-color: ${getTeamColor(match.awayTeam)}">${match.awayTeam}</div>
-                            </div>
-                        `;
+                matchDiv.innerHTML = `
+                    <p><strong>${match.homeTeam} vs ${match.awayTeam}</strong></p>
+                    <p>${formatDateTime(match.date)} (${match.venue})</p>
+                    ${predictionDisplay}
+                    <div class="teams-container">
+                        <div class="team-logo" onclick="predict('${match._id}', '${match.homeTeam}')">
+                            <img src="${getTeamLogo(match.homeTeam)}" alt="${match.homeTeam}" title="${match.homeTeam}">
+                        </div>
+                        <div class="team-logo" onclick="predict('${match._id}', '${match.awayTeam}')">
+                            <img src="${getTeamLogo(match.awayTeam)}" alt="${match.awayTeam}" title="${match.awayTeam}">
+                        </div>
+                    </div>
+                `;
 
-                        matchesList.appendChild(matchDiv);
-                    });
-                });
-        }
+                matchesList.appendChild(matchDiv);
+            });
+        });
+}
 
         async function loadMatches(filterToday = false) {
     try {
