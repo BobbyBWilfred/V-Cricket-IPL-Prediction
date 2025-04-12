@@ -284,19 +284,17 @@
 
             loadMatches();
         }
+        function showTodayMatch() {
+    document.getElementById('matchesContainer').style.display = 'block';
+    document.getElementById('todayPredictionsContainer').style.display = 'none'; // Hide predictions initially
+    document.getElementById('leaderboardContainer').style.display = 'none';
+    document.getElementById('filterContainer').style.display = 'block'; // Keep the filter visible if you want
 
-function showTodayMatch() {
-            document.getElementById('matchesContainer').style.display = 'none';
-            document.getElementById('todayPredictionsContainer').style.display = 'block';
-            document.getElementById('leaderboardContainer').style.display = 'none';
-            document.getElementById('filterContainer').style.display = 'none';
+    document.getElementById('teamFilter').value = '';
+    document.getElementById('statusFilter').value = '';
 
-            document.getElementById('teamFilter').removeEventListener('change', applyFilters);
-            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
-
-            loadMatches(true);
-            loadTodayPredictions();
-        }
+    loadMatches(true); // Load and display only today's matches
+}
 
 
 
