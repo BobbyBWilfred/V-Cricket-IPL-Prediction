@@ -205,56 +205,56 @@
     }
 
     async function loadMatches(filterToday = false) {
-        try {
-            const response = await axios.get('/matches');
-            matches = response.data;
+    try {
+        const response = await axios.get('/matches');
+        matches = response.data;
 
-            let matchesToDisplay = matches;
+        let matchesToDisplay = matches;
 
-            if (filterToday) {
-                const today = new Date();
-                today.setUTCHours(0, 0, 0, 0);
-                const tomorrow = new Date(today);
-                tomorrow.setUTCDate(today.getUTCDate() + 1);
+        if (filterToday) {
+            const today = new Date();
+            today.setUTCHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setUTCDate(today.getUTCDate() + 1);
 
-                matchesToDisplay = matches.filter(match => {
-                    const matchDate = new Date(match.date);
-                    const utcMatchDate = new Date(
-                        matchDate.getUTCFullYear(),
-                        matchDate.getUTCMonth(),
-                        matchDate.getUTCDate(),
-                        matchDate.getUTCHours(),
-                        matchDate.getUTCMinutes(),
-                        matchDate.getUTCSeconds()
-                    );
-                    return utcMatchDate >= today && utcMatchDate < tomorrow;
-                });
-            }
-
-            const teamFilter = document.getElementById('teamFilter');
-            teamFilter.innerHTML = '<option value="">All Teams</option>';
-            const uniqueTeams = [...new Set(matches.flatMap(match => [match.homeTeam, match.awayTeam]))];
-            uniqueTeams.forEach(team => {
-                const option = document.createElement('option');
-                option.value = team;
-                option.textContent = team;
-                teamFilter.appendChild(option);
+            matchesToDisplay = matches.filter(match => {
+                const matchDate = new Date(match.date);
+                const utcMatchDate = new Date(
+                    matchDate.getUTCFullYear(),
+                    matchDate.getUTCMonth(),
+                    matchDate.getUTCDate(),
+                    matchDate.getUTCHours(),
+                    matchDate.getUTCMinutes(),
+                    matchDate.getUTCSeconds()
+                );
+                return utcMatchDate >= today && utcMatchDate < tomorrow;
             });
-
-            // Remove existing event listeners
-            teamFilter.removeEventListener('change', applyFilters);
-            document.getElementById('statusFilter').removeEventListener('change', applyFilters);
-
-            // Add new event listeners
-            teamFilter.addEventListener('change', applyFilters);
-            document.getElementById('statusFilter').addEventListener('change', applyFilters);
-
-            displayMatches(matchesToDisplay); // Initial display
-        } catch (error) {
-            console.error('Load matches error:', error);
-            Swal.fire('Error', 'Failed to load matches', 'error');
         }
+
+        const teamFilter = document.getElementById('teamFilter');
+        teamFilter.innerHTML = '<option value="">All Teams</option>';
+        const uniqueTeams = [...new Set(matches.flatMap(match => [match.homeTeam, match.awayTeam]))];
+        uniqueTeams.forEach(team => {
+            const option = document.createElement('option');
+            option.value = team;
+            option.textContent = team;
+            teamFilter.appendChild(option);
+        });
+
+        // Remove existing event listeners
+        teamFilter.removeEventListener('change', applyFilters);
+        document.getElementById('statusFilter').removeEventListener('change', applyFilters);
+
+        // Add new event listeners
+        teamFilter.addEventListener('change', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+
+        displayMatches(matchesToDisplay); // Initial display (this might be the issue when filterToday is true)
+    } catch (error) {
+        console.error('Load matches error:', error);
+        Swal.fire('Error', 'Failed to load matches', 'error');
     }
+}
 
         function showLeaderboard() {
             document.getElementById('matchesContainer').style.display = 'none';
