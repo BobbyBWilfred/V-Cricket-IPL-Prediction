@@ -188,6 +188,8 @@ app.get('/prediction/:matchId/:userId', async (req, res) => {
             return res.json({ predictedTeam: null, pointsAwarded: false, pointsGiven: null });
         }
 
+        console.log(`Prediction found for match ${matchId} and user ${userId}:`, prediction); // Added log
+
         res.json({
             predictedTeam: prediction.predictedTeam,
             pointsAwarded: prediction.pointsAwarded,
