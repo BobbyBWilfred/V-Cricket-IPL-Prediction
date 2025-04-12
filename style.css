@@ -1,3 +1,4 @@
+/* General Styles */
 body {
     font-family: 'Poppins', sans-serif;
     display: flex;
@@ -10,8 +11,58 @@ body {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: #fff;
 }
+.match-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    display: flex; /* Enable flexbox for the match item */
+    flex-direction: column; /* Stack text content above logos by default */
+    align-items: center; /* Center items horizontally by default */
+}
 
-.login-container, .leaderboard-container, .matches-container, .today-predictions-container {
+.teams-container {
+    display: flex; /* Enable flexbox for logos */
+    align-items: center; /* Vertically align logos */
+    margin-top: 10px; /* Add some space above the logos */
+}
+
+/* In your auction.css */
+/* In your auction.css */
+.team-logo {
+    width: 100px; /* Increased size */
+    height: 100px; /* Increased size */
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1px solid white;
+    margin: 0 15px; /* Slightly increased margin for spacing */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    transition: transform 0.2s ease;
+}
+
+.team-logo img {
+    width: 60%; /* Adjust to fit within the larger circle */
+    height: 60%; /* Adjust to fit within the larger circle */
+    object-fit: contain;
+}
+
+.teams-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    justify-content: center; /* Center the logos horizontally */
+}
+
+/* Containers */
+.login-container,
+.leaderboard-container,
+.matches-container,
+.today-predictions-container {
     width: 95%;
     max-width: 650px;
     padding: 20px;
@@ -27,6 +78,7 @@ body {
     max-width: 800px;
 }
 
+/* Headings */
 h2 {
     font-size: 24px;
     margin-bottom: 20px;
@@ -35,6 +87,7 @@ h2 {
     color: #e0f7fa;
 }
 
+/* Inputs */
 input {
     width: 90%;
     padding: 12px;
@@ -48,6 +101,7 @@ input {
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+/* Buttons */
 button {
     padding: 12px 25px;
     font-size: 17px;
@@ -65,6 +119,7 @@ button:hover {
     background: #45a049;
 }
 
+/* Match Items */
 .match-item {
     padding: 18px;
     border-radius: 10px;
@@ -74,6 +129,7 @@ button:hover {
     text-align: center;
 }
 
+/* Team Circle */
 .team-circle {
     width: 120px;
     height: 120px;
@@ -102,6 +158,7 @@ button:hover {
     box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
 }
 
+/* Table Styling */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -120,6 +177,7 @@ th {
     background: rgba(255, 255, 255, 0.35);
 }
 
+/* User Info Box */
 .user-info {
     position: absolute;
     top: 15px;
@@ -130,13 +188,9 @@ th {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.prediction-result {
-    margin-top: 12px;
-    font-weight: bold;
-}
-
+/* Predictions Section */
 .today-predictions-container {
-    background-color: linear-gradient(135deg, #1e3c72, #2a5298);
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
     padding: 15px;
     margin: 20px auto;
     border-radius: 10px;
@@ -161,7 +215,7 @@ th {
 }
 
 #todayPredictionsList div {
-    background-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.25);
     color: #fff;
     padding: 12px;
     border-radius: 8px;
@@ -170,86 +224,107 @@ th {
     text-align: left;
 }
 
-#todayPredictionsList div strong {
-    color: #e0f7fa;
-}
-
-#todayPredictionsList div p {
-    margin: 6px 0;
-}
-
 #filterContainer {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
+    justify-content: center; /* Center items horizontally */
     background: rgba(255, 255, 255, 0.15);
-    padding: 12px;
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 800px;
+    margin: auto;
+    flex-wrap: wrap; /* Allow wrapping */
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px; /* Add margin for spacing */
 }
 
 #teamFilter, #statusFilter {
-    padding: 12px 15px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
+    width: 180px;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 14px;
     outline: none;
-    margin-left: 10px;
+    transition: 0.3s ease-in-out;
 }
 
-#teamFilter option, #statusFilter option {
-    background: #333;
+#teamFilter:hover, #statusFilter:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 #filterContainer label {
-    font-size: 17px;
+    font-size: 16px;
     color: #e0f7fa;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
-/* Container for the top buttons */
+/* Button Container */
 .button-container {
     display: flex;
-    flex-direction: column; /* Default: vertical buttons */
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px; /* Add some space between buttons and matches */
+    margin-bottom: 20px;
 }
 
-/* Media query for phones */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
     .button-container {
-        flex-direction: row; /* Horizontal buttons on phones */
-        flex-wrap: wrap; /* Allow buttons to wrap to new lines */
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 
     .button-container button {
-        flex: 1 1 auto; /* Distribute space evenly */
-        margin: 5px; /* Adjust margin for spacing */
+        flex: 1 1 auto;
+        margin: 5px;
+    }
+
+    #filterContainer {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .filter-group {
+        width: 100%;
+        justify-content: center;
+    }
+
+    #teamFilter, #statusFilter {
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
-    .login-container, .leaderboard-container, .matches-container, .today-predictions-container {
+    .login-container,
+    .leaderboard-container,
+    .matches-container,
+    .today-predictions-container {
         max-width: 98%;
     }
+
     .team-circle {
         width: 80px;
         height: 80px;
         font-size: 12px;
     }
+
     .button-container button {
         font-size: 14px;
         padding: 10px 15px;
     }
+
     #filterContainer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    #teamFilter, #statusFilter {
-        margin-left: 0;
-        margin-top: 10px;
+        align-items: center;
     }
 }
