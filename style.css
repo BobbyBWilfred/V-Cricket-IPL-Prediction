@@ -11,6 +11,7 @@ body {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: #fff;
 }
+
 .match-item {
     border: 1px solid #ddd;
     padding: 15px;
@@ -26,10 +27,10 @@ body {
     display: flex; /* Enable flexbox for logos */
     align-items: center; /* Vertically align logos */
     margin-top: 10px; /* Add some space above the logos */
+    justify-content: center; /* Center the logos horizontally */
 }
 
-/* In your auction.css */
-/* In your auction.css */
+/* Team Logos */
 .team-logo {
     width: 130px; /* Increased size */
     height: 130px; /* Increased size */
@@ -51,13 +52,6 @@ body {
     object-fit: contain;
 }
 
-.teams-container {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-    justify-content: center; /* Center the logos horizontally */
-}
-
 /* Containers */
 .login-container,
 .leaderboard-container,
@@ -76,6 +70,9 @@ body {
 
 .matches-container {
     max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Headings */
@@ -129,35 +126,6 @@ button:hover {
     text-align: center;
 }
 
-/* Team Circle */
-.team-circle {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: #4CAF50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 12px;
-    cursor: pointer;
-    transition: 0.3s ease;
-    font-size: 15px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-}
-
-.team-circle:hover {
-    background: #45a049;
-    transform: scale(1.03);
-}
-
-.team-circle.selected {
-    border: 4px solid #4CAF50;
-    box-shadow: 0 0 15px rgba(76, 175, 80, 0.8);
-}
-
 /* Table Styling */
 table {
     width: 100%;
@@ -168,7 +136,8 @@ table {
     box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
 }
 
-th, td {
+th,
+td {
     padding: 14px;
     text-align: center;
 }
@@ -224,29 +193,32 @@ th {
     text-align: left;
 }
 
+/* Filter Container */
 #filterContainer {
     display: flex;
     align-items: center;
-    justify-content: center; /* Center items horizontally */
+    justify-content: center; /* Distribute space around items */
     background: rgba(255, 255, 255, 0.15);
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    width: 100%;
-    max-width: 800px;
-    margin: auto;
-    flex-wrap: wrap; /* Allow wrapping */
+    width: 95%; /* Take up most of the matches-container width */
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 10px; /* Space between filter elements */
 }
 
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 10px; /* Add margin for spacing */
+#filterContainer label {
+    font-size: 16px;
+    color: #e0f7fa;
+    font-weight: 500;
+    white-space: nowrap; /* Prevent label wrapping */
 }
 
-#teamFilter, #statusFilter {
-    width: 180px;
+#teamFilter,
+#statusFilter {
+    flex: 1 1 auto; /* Allow them to grow and shrink */
+    min-width: 150px; /* Minimum width to avoid collapsing */
     padding: 8px;
     border: none;
     border-radius: 5px;
@@ -257,15 +229,9 @@ th {
     transition: 0.3s ease-in-out;
 }
 
-#teamFilter:hover, #statusFilter:hover {
+#teamFilter:hover,
+#statusFilter:hover {
     background: rgba(255, 255, 255, 0.4);
-}
-
-#filterContainer label {
-    font-size: 16px;
-    color: #e0f7fa;
-    font-weight: 500;
-    white-space: nowrap;
 }
 
 /* Button Container */
@@ -291,17 +257,19 @@ th {
 
     #filterContainer {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
         gap: 15px;
     }
 
-    .filter-group {
-        width: 100%;
-        justify-content: center;
+    #filterContainer label {
+        text-align: left;
+        margin-bottom: 5px;
     }
 
-    #teamFilter, #statusFilter {
+    #teamFilter,
+    #statusFilter {
         width: 100%;
+        min-width: auto;
     }
 }
 
@@ -313,18 +281,15 @@ th {
         max-width: 98%;
     }
 
-    .team-circle {
+    .team-logo {
         width: 80px;
         height: 80px;
         font-size: 12px;
+        margin: 0 10px;
     }
 
     .button-container button {
         font-size: 14px;
         padding: 10px 15px;
-    }
-
-    #filterContainer {
-        align-items: center;
     }
 }
