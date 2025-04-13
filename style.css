@@ -1,4 +1,116 @@
-/* General Styles */
+/* === FILTER SECTION FIX === */
+#filterContainer {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15); /* Slightly more opaque */
+    padding: 15px; /* Reduced padding for a tighter look */
+    border-radius: 12px;
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.15); /* Softer shadow */
+    margin-bottom: 20px;
+    flex-wrap: wrap; /* Ensure items wrap on smaller screens */
+}
+
+#filterContainer label {
+    font-size: 15px; /* Slightly smaller font */
+    font-weight: 500;
+    color: #e0f7fa;
+    margin-right: 10px; /* Space between label and select */
+}
+
+#teamFilter,
+#statusFilter {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 14px;
+    width: auto; /* Adjust width based on content */
+    flex-grow: 1; /* Allow them to take up available space */
+}
+
+#teamFilter option,
+#statusFilter option {
+    color: black;
+    background-color: white;
+}
+
+/* === LOGIN FORM FIX === */
+.login-container {
+    background: rgba(255, 255, 255, 0.18); /* Slightly more opaque */
+    padding: 30px; /* Adjusted padding */
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 0.6s ease-out;
+    max-width: 400px; /* Slightly reduced max width */
+    width: 90%;
+    text-align: center; /* Center align content */
+}
+
+.login-container h2 {
+    font-size: 28px; /* Slightly smaller font */
+    color: #e0f7fa;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+}
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Reduced gap */
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    padding: 12px 16px; /* Adjusted padding */
+    font-size: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+    color: #fff;
+    transition: border-color 0.3s; /* Transition for focus */
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15); /* Softer inset shadow */
+}
+
+.login-container input:focus {
+    background: rgba(255, 255, 255, 0.3);
+    outline: none; /* Remove default focus outline */
+    border-color: #00cec9; /* Highlight on focus */
+    box-shadow: 0 0 6px rgba(0, 206, 201, 0.4); /* Add a subtle glow */
+}
+
+.login-container input::placeholder {
+    color: rgba(255, 255, 255, 0.5); /* Slightly darker placeholder */
+}
+
+.login-container button {
+    padding: 12px; /* Adjusted padding */
+    border-radius: 10px;
+    background: linear-gradient(to right, #00cec9, #00b894);
+    color: white;
+    font-weight: 600; /* Slightly lighter bold */
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* Softer shadow */
+    transition: background 0.3s ease, transform 0.2s ease-in-out; /* Added transform transition */
+}
+
+.login-container button:hover {
+    background: linear-gradient(to right, #00b894, #0984e3);
+    transform: translateY(-1px); /* Subtle lift on hover */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.25); /* Slightly stronger shadow on hover */
+}
+
+/* RESPONSIVE FILTER STACK */
+@media (max-width: 768px) {
+    #filterContainer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Base Styling */
 body {
     font-family: 'Poppins', sans-serif;
     display: flex;
@@ -6,50 +118,11 @@ body {
     align-items: center;
     justify-content: flex-start;
     min-height: 100vh;
-    margin: 20px;
-    padding: 20px;
+    margin: 0;
+    padding: 30px 15px;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     color: #fff;
-}
-
-.match-item {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    display: flex; /* Enable flexbox for the match item */
-    flex-direction: column; /* Stack text content above logos by default */
-    align-items: center; /* Center items horizontally by default */
-}
-
-.teams-container {
-    display: flex; /* Enable flexbox for logos */
-    align-items: center; /* Vertically align logos */
-    margin-top: 10px; /* Add some space above the logos */
-    justify-content: center; /* Center the logos horizontally */
-}
-
-/* Team Logos */
-.team-logo {
-    width: 130px; /* Increased size */
-    height: 130px; /* Increased size */
-    border-radius: 50%;
-    overflow: hidden;
-    border: 1px solid white;
-    margin: 0 15px; /* Slightly increased margin for spacing */
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f5f5f5;
-    transition: transform 0.2s ease;
-}
-
-.team-logo img {
-    width: 60%; /* Adjust to fit within the larger circle */
-    height: 60%; /* Adjust to fit within the larger circle */
-    object-fit: contain;
+    box-sizing: border-box;
 }
 
 /* Containers */
@@ -58,26 +131,20 @@ body {
 .matches-container,
 .today-predictions-container {
     width: 95%;
-    max-width: 650px;
-    padding: 20px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+    max-width: 700px;
+    padding: 25px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     text-align: center;
-    margin-bottom: 25px;
-}
-
-.matches-container {
-    max-width: 800px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-bottom: 30px;
+    transition: 0.3s ease;
 }
 
 /* Headings */
 h2 {
-    font-size: 24px;
+    font-size: 26px;
     margin-bottom: 20px;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -87,182 +154,208 @@ h2 {
 /* Inputs */
 input {
     width: 90%;
-    padding: 12px;
-    margin: 12px 0;
+    padding: 14px;
+    margin: 15px 0;
     border-radius: 10px;
     border: none;
-    outline: none;
-    font-size: 16px;
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.25);
     color: #fff;
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+    font-size: 16px;
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.25);
+    outline: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus {
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 /* Buttons */
 button {
-    padding: 12px 25px;
+    padding: 14px 28px;
     font-size: 17px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
-    background: #4CAF50;
-    color: #fff;
+    background: linear-gradient(135deg, #28a745, #218838);
+    color: white;
     transition: 0.3s ease;
-    margin: 12px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    margin: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 button:hover {
-    background: #45a049;
+    background: linear-gradient(135deg, #218838, #1e7e34);
+    transform: translateY(-2px);
 }
 
 /* Match Items */
 .match-item {
-    padding: 18px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    margin-bottom: 18px;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    margin-bottom: 20px;
     text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Table Styling */
+/* Team Logos */
+.teams-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.team-logo {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid white;
+    margin: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    transition: 0.3s ease;
+}
+
+.team-logo:hover {
+    transform: scale(1.08);
+}
+
+.team-logo img {
+    width: 65%;
+    height: 65%;
+    object-fit: contain;
+}
+
+/* Table */
 table {
     width: 100%;
     border-collapse: collapse;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
 }
 
 th,
 td {
-    padding: 14px;
+    padding: 15px;
     text-align: center;
+    color: #fff;
 }
 
 th {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.25);
 }
 
-/* User Info Box */
+/* User Info */
 .user-info {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: rgba(255, 255, 255, 0.25);
-    padding: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 16px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-size: 0.95em;
 }
 
-/* Predictions Section */
+/* Today's Predictions */
 .today-predictions-container {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
-    padding: 15px;
-    margin: 20px auto;
-    border-radius: 10px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-    max-width: 550px;
-}
-
-.today-predictions-container h2 {
-    color: #e0f7fa;
-    text-align: center;
-    margin-bottom: 15px;
-    font-size: 20px;
+    padding: 20px;
+    margin: 25px auto;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
 }
 
 #todayPredictionsList {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
 #todayPredictionsList div {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.18);
     color: #fff;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 14px;
+    border-radius: 10px;
     font-size: 15px;
     text-align: left;
 }
 
-/* Filter Container */
-#filterContainer {
+/* Filter Controls (Redundant - the first section is the updated one) */
+/* #filterContainer {
     display: flex;
     align-items: center;
-    justify-content: center; /* Distribute space around items */
-    background: rgba(255, 255, 255, 0.15);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    width: 95%; /* Take up most of the matches-container width */
-    margin-bottom: 20px;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
-    gap: 10px; /* Space between filter elements */
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    border-radius: 10px;
+    width: 95%;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 }
 
 #filterContainer label {
     font-size: 16px;
     color: #e0f7fa;
     font-weight: 500;
-    white-space: nowrap; /* Prevent label wrapping */
+    flex: 1 1 100px;
 }
 
 #teamFilter,
 #statusFilter {
-    flex: 1 1 auto; /* Allow them to grow and shrink */
-    min-width: 150px; /* Minimum width to avoid collapsing */
-    padding: 8px;
+    flex: 2 1 180px;
+    padding: 10px;
     border: none;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.25);
     color: white;
-    font-size: 14px;
+    font-size: 15px;
     outline: none;
-    transition: 0.3s ease-in-out;
+    transition: 0.3s ease;
 }
 
-#teamFilter:hover,
-#statusFilter:hover {
-    background: rgba(255, 255, 255, 0.4);
-}
-
-/* Style the dropdown options */
 #teamFilter option,
 #statusFilter option {
-    color: black; /* Default text color for options */
-    background-color: white; /* Default background color for options */
+    color: black;
+    background-color: white;
+} */
+
+/* Match Ongoing Badge */
+.match-ongoing-message {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* Style the dropdown options on hover */
-#teamFilter option:hover,
-#statusFilter option:hover {
-    background-color: #007bff !important; /* Use !important to ensure override */
-    color: white !important;
-}
-
-/* Style the selected option */
-#teamFilter option:checked,
-#statusFilter option:checked {
-    background-color: #28a745 !important; /* Use !important to ensure override */
-    color: white !important;
-}
-
-/* Style the focused state of the select element itself */
-#teamFilter:focus,
-#statusFilter:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-}
-
-/* Button Container */
+/* Button Layout */
 .button-container {
     display: flex;
     flex-direction: column;
@@ -271,7 +364,70 @@ th {
     margin-bottom: 20px;
 }
 
-/* Responsive Adjustments */
+.button-container button {
+    margin: 8px;
+}
+
+/* Login Enhancements (Redundant - the first section is the updated one) */
+/* .login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.login-container h2 {
+    font-size: 28px;
+    color: #ffffff;
+    letter-spacing: 1.5px;
+}
+
+.login-container form {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    padding: 14px 18px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    outline: none;
+    font-size: 16px;
+} */
+
+/* Login Buttons (Redundant - the first section is the updated one) */
+/* .login-container button {
+    width: 100%;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    font-weight: bold;
+}
+
+.login-container button:hover {
+    background: linear-gradient(135deg, #00cec9, #0984e3);
+} */
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
     .button-container {
         flex-direction: row;
@@ -281,63 +437,8 @@ th {
     .button-container button {
         flex: 1 1 auto;
         margin: 5px;
-    }
-
-    #filterContainer {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-
-    #filterContainer label {
-        text-align: left;
-        margin-bottom: 5px;
-    }
-
-    #teamFilter,
-    #statusFilter {
-        width: 100%;
-        min-width: auto;
-    }
-}
-/* Style for the "Match Ongoing" message */
-.match-ongoing-message {
-    background-color: #dc3545; /* Red background */
-    color: white;
-    padding: 8px 12px;
-    border-radius: 5px;
-    font-size: 0.9em;
-    font-weight: bold;
-    position: absolute; /* Position it within the match item */
-    top: 10px;
-    right: 10px;
-    z-index: 10; /* Ensure it's above other content */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Ensure match-item is positioned for absolute positioning of the message */
-.match-item {
-    /* ... other styles ... */
-    position: relative; /* Add this if it's not already there */
-    overflow: hidden; /* To contain the absolutely positioned element if needed */
-}
-@media (max-width: 480px) {
-    .login-container,
-    .leaderboard-container,
-    .matches-container,
-    .today-predictions-container {
-        max-width: 98%;
-    }
-
-    .team-logo {
-        width: 80px;
-        height: 80px;
-        font-size: 12px;
-        margin: 0 10px;
-    }
-
-    .button-container button {
         font-size: 14px;
-        padding: 10px 15px;
+        padding: 10px 20px;
     }
+
 }
