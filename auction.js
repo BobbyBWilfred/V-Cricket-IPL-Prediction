@@ -132,32 +132,61 @@ app.get('/matches', async (req, res) => {
 });
 
 app.post('/predict', async (req, res) => {
-    const { matchId, team, userId } = req.body;
+    // Extract data from the request body
+    const { matchId, team, userId } = req.body;
 
-    try {
-        const match = await Match.findById(matchId);
-        if (!match) {
-            return res.status(404).json({ message: 'Match not found' });
-        }
-
-        if (new Date() > new Date(match.date)) {
-            return res.status(400).json({ message: 'Match has already started. Predictions are closed.' });
-        }
-
-        const existingPrediction = await Prediction.findOne({ userId, matchId });
-        if (existingPrediction) {
-            return res.status(400).json({ message: 'Prediction already exists and cannot be changed' });
-        } else {
-            const newPrediction = new Prediction({ userId, matchId, predictedTeam: team });
-            await newPrediction.save();
-            res.json({ message: 'Prediction saved' });
-        }
-    } catch (error) {
-        console.error('Prediction error:', error);
-        res.status(500).json({ message: 'Failed to save prediction' });
+    // --- ADD THIS AUTHORIZATION CHECK ---
+    // Assuming your authentication middleware populates req.user with the logged-in user's document
+    if (!req.user) {
+        // No user is logged in
+        console.warn('Unauthorized prediction attempt: No authenticated user.');
+        return res.status(401).json({ message: 'Authentication required to make a prediction.' });
     }
-});
 
+    // Get the ID of the user who is ACTUALLY logged in
+    const loggedInUserId = req.user._id;
+
+    // Compare the logged-in user's ID with the userId provided in the request body.
+    // Use .toString() to ensure comparison works correctly between ObjectId and string types.
+    if (loggedInUserId.toString() !== userId) {
+        // The logged-in user is trying to predict for a different user ID
+        console.warn(`Unauthorized prediction attempt: User ${loggedInUserId} tried to predict for user ${userId}`);
+        return res.status(403).json({ message: 'Forbidden: You can only make predictions for your own account.' });
+    }
+    // --- END OF AUTHORIZATION CHECK ---
+
+
+    try {
+        const match = await Match.findById(matchId);
+        if (!match) {
+            return res.status(404).json({ message: 'Match not found' });
+        }
+
+        // This server-side check is good, keep it!
+        if (new Date() > new Date(match.date)) {
+            return res.status(400).json({ message: 'Match has already started. Predictions are closed.' });
+        }
+
+        // --- EDIT THIS LINE ---
+        // Find the existing prediction using the VERIFIED loggedInUserId, NOT the userId from req.body
+        const existingPrediction = await Prediction.findOne({ userId: loggedInUserId, matchId });
+
+        if (existingPrediction) {
+            // Your existing logic prevents changing predictions - keep this if that's the desired behavior
+            // If you wanted to allow changing, you would update existingPrediction here instead of returning
+            return res.status(400).json({ message: 'Prediction already exists and cannot be changed' });
+        } else {
+            // --- EDIT THIS LINE ---
+            // Create the new prediction using the VERIFIED loggedInUserId, NOT the userId from req.body
+            const newPrediction = new Prediction({ userId: loggedInUserId, matchId, predictedTeam: team });
+            await newPrediction.save();
+            res.json({ message: 'Prediction saved' });
+        }
+    } catch (error) {
+        console.error('Prediction error:', error);
+        res.status(500).json({ message: 'Failed to save prediction' });
+    }
+});
 app.get('/prediction/:matchId/:userId', async (req, res) => {
     const { matchId, userId } = req.params;
     try {
